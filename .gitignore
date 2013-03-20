@@ -1,0 +1,3 @@
+*.pyc
+ixprofile_client_env/*
+puppet_settings.py
