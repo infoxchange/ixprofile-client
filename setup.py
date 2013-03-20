@@ -14,7 +14,7 @@ setup(
     description='IX Profile Server client',
     long_description=open('README').read(),
     install_requires=[
-        "Django >= 1.5.0",
+        "Django >= 1.4.0",
         "django-social-auth >= 0.7.20",
         "flake8 >= 2.0",
         "pylint >= 0.27.0",
