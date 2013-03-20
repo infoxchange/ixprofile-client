@@ -1,0 +1,50 @@
+==============
+IXProfileClient
+==============
+
+Library package for Django applications using the IX Profiles server for
+authentication and user management.
+
+
+Functionality
+-------------
+
+* Logging in is managed by the profile server. Users are redirected to its
+  login page for logging in.
+* Users are identified by emails, they use their email to log in to the profile
+  server.
+* User details (e.g. names) are updated from the profile server.
+* Creating new users in the admin creates them on the profile server. Setting
+  is_active flag subscribes and unsubscribes them from the application.
+
+
+Usage
+-----
+
+To connect to the profile server, the following settings should be configured:
+
+# The URL of the profile server to use.
+PROFILE_SERVER = 'https://profiles.somewhere/'
+
+# Key and secret to authenticate on the profile server for user management.
+# Must correspond to a registered Website on the profile server specified by
+# the above URL.
+PROFILE_SERVER_KEY = 'myapp'
+PROFILE_SERVER_SECRET = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+
+LOGIN_URL = 'ixprofile-start-login'
+
+INSTALLED_APPS = (
+    # other applications,
+    'social_auth',
+    'ixprofile_client',
+)
+
+AUTHENTICATION_BACKENDS = (
+    'ixprofile_client.backends.IXProfile',
+    # any other backends you might want; default ModelBackend is not needed
+)
+
+In urls.py, include the following:
+
+url(r'', include('ixprofile_client.urls'))
