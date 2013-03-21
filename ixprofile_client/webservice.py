@@ -113,7 +113,7 @@ class UserWebService(object):
         response.raise_for_status()
         return response.json()
 
-    def register(self, user, password):
+    def register(self, user):
         """
         Register a new user on the profile server
         """
@@ -121,7 +121,6 @@ class UserWebService(object):
             'email': user.email,
             'first_name': user.first_name,
             'last_name': user.last_name,
-            'password': password,
         }
         response = requests.post(
             self._list_uri(),
