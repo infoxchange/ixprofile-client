@@ -37,7 +37,7 @@ class IXProfileAuth(backends.OpenIdAuth):
     AUTH_BACKEND = IXProfile
 
     def openid_url(self):
-        return "%s/id/xrds" % settings.PROFILE_SERVER
+        return "%s/id/xrds/" % settings.PROFILE_SERVER
 
 
 BACKENDS = {
