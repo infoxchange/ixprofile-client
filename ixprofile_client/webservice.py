@@ -129,3 +129,21 @@ class UserWebService(object):
             verify=settings.SSL_CA_FILE,
         )
         response.raise_for_status()
+        return response.json()
+
+    def connect(self, user, commit=True):
+        """
+        Ensure a user with given user's email exists on the profile server,
+        update the details as needed and save the user if commit is True.
+        """
+        details = self.details(user.email)
+        if details is None:
+            details = self.register(user)
+        else:
+            user.first_name = details['first_name']
+            user.last_name = details['last_name']
+        user.username = details['username']
+        user.set_password(None)
+        if commit:
+            user.save()
+        return user

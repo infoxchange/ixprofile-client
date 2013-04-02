@@ -5,7 +5,7 @@ A management command to create a user with a given email.
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 
-from ixprofile_client.models import hash_email
+from ixprofile_client.webservice import UserWebService
 
 from optparse import make_option
 
@@ -36,8 +36,11 @@ class Command(BaseCommand):
         if not email:
             raise CommandError("No email given.")
 
-        username = hash_email(email)
-        User.objects.create_superuser(username, email, None)
+        user = User()
+        user.email = email
+        user.set_password(None)
+        user_ws = UserWebService()
+        user_ws.connect(user)
 
         if verbosity >= 1:
             self.stdout.write("Superuser created successfully.")

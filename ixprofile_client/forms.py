@@ -4,7 +4,6 @@ Forms for editing the users backed by the profile server.
 from django import forms
 from django.contrib.auth.models import User
 
-from ixprofile_client.models import hash_email
 from ixprofile_client.webservice import UserWebService
 
 
@@ -29,16 +28,6 @@ class UserFormBase(forms.ModelForm):
             'last_name',
         )
 
-    def save(self, commit=True):
-        """
-        Save the user, setting the username to a hash of email.
-        """
-        user = super(UserFormBase, self).save(commit=False)
-        user.username = hash_email(user.email)
-        if commit:
-            user.save()
-        return user
-
 
 # pylint:disable=E1002,W0232
 # ModelForm is a new style class
@@ -54,14 +43,8 @@ class UserCreationForm(UserFormBase):
         Create the user, registering them on the profile server.
         """
         user = super(UserCreationForm, self).save(commit=False)
-        user.set_password(None)
         user_ws = UserWebService()
-        details = user_ws.details(user.email)
-        if details is None:
-            user_ws.register(user)
-        else:
-            user.first_name = details['first_name']
-            user.last_name = details['last_name']
+        user_ws.connect(user, commit=False)
         if commit:
             user.save()
         return user
