@@ -20,6 +20,8 @@ class UserAdmin(auth_admin.UserAdmin):
             'first_name',
             'last_name',
             'is_active',
+            'is_staff',
+            'is_superuser',
             'last_login',
             'date_joined',
         )}),
