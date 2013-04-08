@@ -1,11 +1,20 @@
 """
 Django admin overrides for the IX profile server client.
 """
+from django.forms import fields
 from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
 from django.contrib.auth.models import User
 
 from ixprofile_client import forms
+
+
+class AdminUserChangeForm(forms.UserChangeForm):
+    """
+    A form for editing the user in the admin interface.
+    """
+    is_staff = fields.BooleanField(required=False)
+    is_superuser = fields.BooleanField(required=False)
 
 
 # pylint:disable=R0904
@@ -62,7 +71,7 @@ class UserAdmin(auth_admin.UserAdmin):
         else:
             return self.readonly_fields
 
-    form = forms.UserChangeForm
+    form = AdminUserChangeForm
     add_form = forms.UserCreationForm
 
 admin.site.unregister(User)

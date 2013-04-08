@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from ixprofile_client.webservice import UserWebService
 
 
-# pylint:disable=E1002,W0232
+# pylint:disable=E1002
 # ModelForm is a new style class
 class UserFormBase(forms.ModelForm):
     """
@@ -15,8 +15,6 @@ class UserFormBase(forms.ModelForm):
     disabled password.
     """
 
-    # pylint:disable=W0232,R0903
-    # Meta doesn't need __init__ or other methods
     class Meta:
         """
         Meta options for the user form.
@@ -29,10 +27,8 @@ class UserFormBase(forms.ModelForm):
         )
 
 
-# pylint:disable=E1002,W0232
+# pylint:disable=E1002
 # ModelForm is a new style class
-# pylint:disable=R0903
-# Too few public methods - part of the API
 class UserCreationForm(UserFormBase):
     """
     User creation form.
@@ -50,10 +46,8 @@ class UserCreationForm(UserFormBase):
         return user
 
 
-# pylint:disable=E1002,W0232
+# pylint:disable=E1002
 # ModelForm is a new style class
-# pylint:disable=R0903
-# Too few public methods - part of the API
 class UserChangeForm(UserFormBase):
     """
     User edit form.
