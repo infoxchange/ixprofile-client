@@ -39,6 +39,8 @@ class Command(BaseCommand):
         user = User()
         user.email = email
         user.set_password(None)
+        user.is_superuser = True
+
         user_ws = UserWebService()
         user_ws.connect(user)
 
