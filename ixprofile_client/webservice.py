@@ -12,6 +12,8 @@ import json
 import requests
 from requests.auth import AuthBase
 
+from ixprofile_client import exceptions
+
 
 class OAuth(AuthBase):
     """
@@ -110,6 +112,8 @@ class UserWebService(object):
         # Instance of 'LookupDict' has no 'not_found' member
         if response.status_code == requests.codes.not_found:
             return None
+        if response.status_code == requests.codes.multiple_choices:
+            raise exceptions.EmailNotUnique(email)
         response.raise_for_status()
         return response.json()
 
