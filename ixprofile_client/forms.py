@@ -6,14 +6,18 @@ from django.contrib.auth.models import User
 
 from ixprofile_client.webservice import UserWebService
 
+# pylint:disable=super-on-old-class
+# Forms are new style classes
 
-# pylint:disable=E1002
-# ModelForm is a new style class
 class UserFormBase(forms.ModelForm):
     """
     A form for creating or editing users with hashed email as username and a
     disabled password.
     """
+
+    def __init__(self, *args, **kwargs):
+        super(UserFormBase, self).__init__(*args, **kwargs)
+        self.user_ws = UserWebService()
 
     class Meta:
         """
@@ -27,8 +31,6 @@ class UserFormBase(forms.ModelForm):
         )
 
 
-# pylint:disable=E1002
-# ModelForm is a new style class
 class UserCreationForm(UserFormBase):
     """
     User creation form.
@@ -39,15 +41,12 @@ class UserCreationForm(UserFormBase):
         Create the user, registering them on the profile server.
         """
         user = super(UserCreationForm, self).save(commit=False)
-        user_ws = UserWebService()
-        user_ws.connect(user, commit=False)
+        self.user_ws.connect(user, commit=False)
         if commit:
             user.save()
         return user
 
 
-# pylint:disable=E1002
-# ModelForm is a new style class
 class UserChangeForm(UserFormBase):
     """
     User edit form.
@@ -61,11 +60,10 @@ class UserChangeForm(UserFormBase):
         on the profile server as needed.
         """
         user = super(UserChangeForm, self).save(commit=False)
-        user_ws = UserWebService()
         if user.is_active:
-            user_ws.subscribe(user)
+            self.user_ws.subscribe(user)
         else:
-            user_ws.unsubscribe(user)
+            self.user_ws.unsubscribe(user)
         if commit:
             user.save()
         return user

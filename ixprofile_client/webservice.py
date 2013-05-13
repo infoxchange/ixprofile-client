@@ -52,6 +52,8 @@ class UserWebService(object):
     USER_LIST_URI = "api/user/"
     USER_URI = "api/user/%s/"
 
+    register_email_template = None
+
     def _list_uri(self):
         """
         The URL for the user list.
@@ -126,6 +128,8 @@ class UserWebService(object):
             'first_name': user.first_name,
             'last_name': user.last_name,
         }
+        if self.register_email_template is not None:
+            data['email_template'] = self.register_email_template
         response = requests.post(
             self._list_uri(),
             auth=self.auth,
@@ -144,6 +148,7 @@ class UserWebService(object):
         if details is None:
             details = self.register(user)
         else:
+            self.subscribe(user)
             user.first_name = details['first_name']
             user.last_name = details['last_name']
         user.username = details['username']
