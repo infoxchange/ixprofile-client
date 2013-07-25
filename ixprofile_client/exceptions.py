@@ -35,3 +35,25 @@ class EmailNotUnique(ProfileServerException):
         Unique representation of the exception
         """
         return "EmailNotUnique('%s')" % self.email
+
+
+class ProfileServerFailure(ProfileServerException):
+    """
+    A generic failure on the part of the profile server.
+    """
+    def __init__(self, response):
+        super(ProfileServerFailure, self).__init__()
+        self.response = response
+
+    def __str__(self):
+        """
+        String representation of the exception
+        """
+        return self.__unicode__()
+
+    def __unicode__(self):
+        """
+        Unicode representation of the exception
+        """
+        return "Profile server failure: %d %s." % (
+            self.response.status_code, self.response.reason)
