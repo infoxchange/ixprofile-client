@@ -114,8 +114,10 @@ class UserWebService(object):
         # Instance of 'LookupDict' has no 'not_found' member
         if response.status_code == requests.codes.not_found:
             return None
-        if response.status_code == requests.codes.multiple_choices:
+        elif response.status_code == requests.codes.multiple_choices:
             raise exceptions.EmailNotUnique(email)
+        elif 400 <= response.status_code < 600:
+            raise exceptions.ProfileServerFailure(response)
         response.raise_for_status()
         return response.json()
 
