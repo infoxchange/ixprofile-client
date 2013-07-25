@@ -9,6 +9,7 @@ from ixprofile_client.webservice import UserWebService
 # pylint:disable=super-on-old-class
 # Forms are new style classes
 
+
 class UserFormBase(forms.ModelForm):
     """
     A form for creating or editing users with hashed email as username and a
