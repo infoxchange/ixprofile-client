@@ -76,6 +76,14 @@ class UserWebService(object):
             settings.PROFILE_SERVER_SECRET
         )
 
+    @staticmethod
+    def _raise_for_failure(response):
+        """
+        Raise an appropriate exception on a Web service response
+        """
+        if 400 <= response.status_code < 600:
+            raise exceptions.ProfileServerFailure(response)
+
     def _set_subscription_status(self, user, status):
         """
         Set the subscription status of a user.
@@ -87,7 +95,7 @@ class UserWebService(object):
             data=json.dumps(data),
             verify=settings.SSL_CA_FILE,
         )
-        response.raise_for_status()
+        self._raise_for_failure(response)
 
     def subscribe(self, user):
         """
@@ -116,10 +124,9 @@ class UserWebService(object):
             return None
         elif response.status_code == requests.codes.multiple_choices:
             raise exceptions.EmailNotUnique(email)
-        elif 400 <= response.status_code < 600:
-            raise exceptions.ProfileServerFailure(response)
-        response.raise_for_status()
-        return response.json()
+        else:
+            self._raise_for_failure(response)
+            return response.json()
 
     def register(self, user):
         """
@@ -138,7 +145,7 @@ class UserWebService(object):
             data=json.dumps(data),
             verify=settings.SSL_CA_FILE,
         )
-        response.raise_for_status()
+        self._raise_for_failure(response)
         return response.json()
 
     def connect(self, user, commit=True):
