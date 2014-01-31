@@ -1,5 +1,5 @@
 {# Include me in your page for a login box #}
 <iframe id="login_frame"
-        src="{% url 'socialauth_begin' 'ixprofile' %}?next=/ixlogin/unbox/{% if request.GET.next %}{{ request.GET.next }}{% else %}{{ settings.LOGIN_REDIRECT_URL }}{% endif %}"
+        src="{% url 'social:begin' 'ixprofile' %}?next=/ixlogin/unbox/{% if request.GET.next %}{{ request.GET.next }}{% else %}{{ settings.LOGIN_REDIRECT_URL }}{% endif %}"
         frameborder="0"
         allowTransparency="true"></iframe>

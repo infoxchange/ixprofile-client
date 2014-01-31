@@ -36,7 +36,7 @@ LOGIN_URL = 'ixprofile-start-login'
 
 INSTALLED_APPS = (
     # other applications,
-    'social_auth',
+    'social.apps.django_app.default',
     'ixprofile_client',
 )
 
