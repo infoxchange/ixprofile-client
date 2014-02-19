@@ -4,16 +4,18 @@ Django Social Auth backend for authentication using the IX Profile server
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-from social import pipeline
 from social.backends import open_id
 
 
-pipeline.DEFAULT_AUTH_PIPELINE = (
-    'social.pipeline.social_auth.social_auth_user',
+settings.SOCIAL_AUTH_PIPELINE = (
+    'social.pipeline.social_auth.social_details',
+    'social.pipeline.social_auth.social_uid',
+    'social.pipeline.social_auth.social_user',
     'ixprofile_client.pipeline.match_user',
+    'social.pipeline.user.create_user',
     'social.pipeline.social_auth.associate_user',
     'social.pipeline.social_auth.load_extra_data',
-    'social.pipeline.user.update_user_details',
+    'social.pipeline.user.user_details',
 )
 
 
@@ -30,4 +32,11 @@ class IXProfile(open_id.OpenIdAuth):
     name = 'ixprofile'
 
     def openid_url(self):
-        return "%s/id/xrds/" % settings.PROFILE_SERVER
+        """
+        The URL of the OpenID server (profile server).
+
+        This is a static return, but returned via a method to allow for
+        mocking of settings.PROFILE_SERVER.
+        """
+
+        return '%s/id/xrds/' % settings.PROFILE_SERVER
