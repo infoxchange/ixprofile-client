@@ -30,4 +30,13 @@ class IXProfile(open_id.OpenIdAuth):
     A backend for authentication via the IX Profile server
     """
     name = 'ixprofile'
-    URL = '%s/id/xrds/' % settings.PROFILE_SERVER
+
+    def openid_url(self):
+        """
+        The URL of the OpenID server (profile server).
+
+        This is a static return, but returned via a method to allow for
+        mocking of settings.PROFILE_SERVER.
+        """
+
+        return '%s/id/xrds/' % settings.PROFILE_SERVER
