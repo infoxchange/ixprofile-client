@@ -8,6 +8,7 @@ from django.http import HttpResponseRedirect
 from social.exceptions import AuthFailed
 
 import re
+import urllib
 
 from ixprofile_client.webservice import UserWebService
 
@@ -33,7 +34,7 @@ def match_user(strategy, details, response, uid, *args, **kwargs):
     match = re.match('^%sid/u/(.+)$' % settings.PROFILE_SERVER, uid)
 
     if match:
-        username = match.group(1)
+        username = urllib.unquote(match.group(1))
         try:
             # user is known to us
             user = User.objects.get(username=username)
