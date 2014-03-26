@@ -10,5 +10,6 @@ from django.views.generic import TemplateView
 urlpatterns = patterns(
     '',
     url(r'', include('social.apps.django_app.urls', namespace='social')),
+    # pylint:disable=no-value-for-parameter
     url(r'^ixlogin/unbox/', TemplateView.as_view(template_name='unbox.html')),
 )

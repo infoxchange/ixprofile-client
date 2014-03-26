@@ -25,6 +25,7 @@ if not settings.PROFILE_SERVER:
     )
 
 
+# pylint:disable=too-many-public-methods
 class IXProfile(open_id.OpenIdAuth):
     """
     A backend for authentication via the IX Profile server

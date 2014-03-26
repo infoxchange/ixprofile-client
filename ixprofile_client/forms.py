@@ -20,7 +20,7 @@ class UserFormBase(forms.ModelForm):
         super(UserFormBase, self).__init__(*args, **kwargs)
         self.user_ws = UserWebService()
 
-    class Meta:
+    class Meta(object):
         """
         Meta options for the user form.
         """
