@@ -4,6 +4,7 @@ A management command to create a user with a given email.
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 
 from ixprofile_client.webservice import UserWebService
 
@@ -36,15 +37,18 @@ class Command(BaseCommand):
         if not email:
             raise CommandError("No email given.")
 
-        user = User()
-        user.email = email
-        user.set_password(None)
-        user.is_active = True
-        user.is_staff = True
-        user.is_superuser = True
+        with transaction.atomic():
+            user, created = User.objects.get_or_create(email=email)
+            user.set_password(None)
+            user.is_active = True
+            user.is_staff = True
+            user.is_superuser = True
 
-        user_ws = UserWebService()
-        user_ws.connect(user)
+            user_ws = UserWebService()
+            user_ws.connect(user)
 
-        if verbosity >= 1:
-            self.stdout.write("Superuser created successfully.")
+            if verbosity >= 1:
+                if created:
+                    self.stdout.write("Superuser created successfully.")
+                else:
+                    self.stdout.write("Superuser flag added successfully.")
