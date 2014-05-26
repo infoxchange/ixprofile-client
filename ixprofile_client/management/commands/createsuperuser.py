@@ -23,8 +23,8 @@ class Command(BaseCommand):
                     action='store_false',
                     dest='interactive',
                     default=True,
-                    help='Tells Django to NOT prompt the user for input of ' +
-                         'any kind. You must use --email with --noinput.'),
+                    help='Tells Django to NOT prompt the user for input of '
+                    'any kind. You must use --email with --noinput.'),
     )
 
     def handle(self, *args, **options):

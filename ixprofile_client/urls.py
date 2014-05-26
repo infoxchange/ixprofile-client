@@ -5,8 +5,9 @@ Route configuration for the IX Profile client
 from django.conf.urls import include, patterns, url
 from django.views.generic import TemplateView
 
-# pylint:disable=C0103
+# pylint:disable=invalid-name,no-value-for-parameter
 # The name 'urlpatterns' is a part of the API
+# 'cls' is a bogus parameter
 urlpatterns = patterns(
     '',
     url(r'', include('social.apps.django_app.urls', namespace='social')),
