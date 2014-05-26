@@ -2,6 +2,8 @@
 Web service to interact with the profile server user records
 """
 
+from urlparse import urljoin
+
 from django.conf import settings
 
 from ixdjango.utils import flatten_auth_header
@@ -49,8 +51,8 @@ class UserWebService(object):
     Web service to interact with the profile server user records
     """
 
-    USER_LIST_URI = "api/user/"
-    USER_URI = "api/user/%s/"
+    USER_LIST_URI = "/api/user/"
+    USER_URI = "/api/user/%s/"
 
     register_email_template = None
 
@@ -58,13 +60,30 @@ class UserWebService(object):
         """
         The URL for the user list.
         """
-        return self.profile_server + self.USER_LIST_URI
+        return urljoin(self.profile_server, self.USER_LIST_URI)
 
     def _detail_uri(self, email):
         """
         The URL for the user details.
         """
-        return self.profile_server + self.USER_URI % email
+        return urljoin(self.profile_server, self.USER_URI % email)
+
+    def _request(self, method, url, **kwargs):
+        """
+        Make a request to the profile server.
+        """
+
+        if method != 'GET':
+            kwargs.setdefault('headers', {}).\
+                setdefault('Content-Type', 'application/json')
+
+        return requests.request(
+            method,
+            url,
+            auth=self.auth,
+            verify=settings.SSL_CA_FILE,
+            **kwargs
+        )
 
     def __init__(self):
         """
@@ -89,12 +108,8 @@ class UserWebService(object):
         Set the subscription status of a user.
         """
         data = {'subscribed': status}
-        response = requests.patch(
-            self._detail_uri(user.email),
-            auth=self.auth,
-            data=json.dumps(data),
-            verify=settings.SSL_CA_FILE,
-        )
+        response = self._request('PATCH', self._detail_uri(user.email),
+                                 data=json.dumps(data))
         self._raise_for_failure(response)
 
     def subscribe(self, user):
@@ -113,12 +128,8 @@ class UserWebService(object):
         """
         Get the user details from the profile server
         """
-        response = requests.get(
-            self._detail_uri(email),
-            auth=self.auth,
-            verify=settings.SSL_CA_FILE,
-        )
-        # pylint:disable=E1101
+        response = self._request('GET', self._detail_uri(email))
+        # pylint:disable=no-member
         # Instance of 'LookupDict' has no 'not_found' member
         if response.status_code == requests.codes.not_found:
             return None
@@ -139,12 +150,8 @@ class UserWebService(object):
         }
         if self.register_email_template is not None:
             data['email_template'] = self.register_email_template
-        response = requests.post(
-            self._list_uri(),
-            auth=self.auth,
-            data=json.dumps(data),
-            verify=settings.SSL_CA_FILE,
-        )
+        response = self._request('POST', self._list_uri(),
+                                 data=json.dumps(data))
         self._raise_for_failure(response)
         return response.json()
 

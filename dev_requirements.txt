@@ -1,0 +1,8 @@
+Django
+IXDjango
+IXWSAuth
+pep8
+pylint
+pylint_mccabe
+python-social-auth
+requests

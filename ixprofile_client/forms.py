@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 
 from ixprofile_client.webservice import UserWebService
 
-# pylint:disable=super-on-old-class
+# pylint:disable=old-style-class,super-on-old-class
 # Forms are new style classes
 
 

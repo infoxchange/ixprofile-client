@@ -1,6 +1,9 @@
 """
 Django Social Auth backend for authentication using the IX Profile server
 """
+
+from urlparse import urljoin
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
@@ -39,4 +42,4 @@ class IXProfile(open_id.OpenIdAuth):
         mocking of settings.PROFILE_SERVER.
         """
 
-        return '%s/id/xrds/' % settings.PROFILE_SERVER
+        return urljoin(settings.PROFILE_SERVER, '/id/xrds/')

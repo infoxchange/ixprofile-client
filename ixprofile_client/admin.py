@@ -17,8 +17,6 @@ class AdminUserChangeForm(forms.UserChangeForm):
     is_superuser = fields.BooleanField(required=False)
 
 
-# pylint:disable=R0904
-# Too many public methods - in the base class
 class UserAdmin(auth_admin.UserAdmin):
     """
     Customised version of the user admin.
