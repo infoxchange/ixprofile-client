@@ -42,17 +42,16 @@ class UserCreationForm(UserFormBase):
         Validate fields before saving
         """
         cleaned_data = super(UserCreationForm, self).clean()
+        users = User.objects.filter(email__iexact=cleaned_data.get("email"))
 
-        try:
-            user = User.objects.get(email=cleaned_data.get("email"))
-
-            # The user already exists, do not save
+        if users.exists():
+            # Raise an exception if the user is already created
             raise forms.ValidationError(
                 "Email is already registered to user %(username)s",
-                params={'username': user.get_full_name()}
+                params={'username': users.first().get_full_name()}
             )
-        except User.DoesNotExist:
-            pass
+
+        return cleaned_data
 
     def save(self, commit=True):
         """
