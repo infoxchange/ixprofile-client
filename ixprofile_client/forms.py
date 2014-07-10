@@ -3,6 +3,7 @@ Forms for editing the users backed by the profile server.
 """
 from django import forms
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 
 from ixprofile_client.webservice import UserWebService
 
@@ -36,6 +37,23 @@ class UserCreationForm(UserFormBase):
     """
     User creation form.
     """
+
+    def clean(self):
+        """
+        Validate fields before saving
+        """
+        cleaned_data = super(UserCreationForm, self).clean()
+
+        try:
+            user = User.objects.get(email=cleaned_data.get("email"))
+
+            # The user already exists, do not save
+            raise forms.ValidationError(
+                "Email is already registered to user %(username)s",
+                params={'username': user.get_full_name()}
+            )
+        except ObjectDoesNotExist:
+            pass
 
     def save(self, commit=True):
         """
