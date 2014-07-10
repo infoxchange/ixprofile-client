@@ -37,21 +37,21 @@ class UserCreationForm(UserFormBase):
     User creation form.
     """
 
-    def clean(self):
+    def clean_email(self):
         """
-        Validate fields before saving
+        Validate that the email is not already registered
         """
-        cleaned_data = super(UserCreationForm, self).clean()
-        users = User.objects.filter(email__iexact=cleaned_data.get("email"))
+        # pylint:disable=no-member
+        email = self.cleaned_data["email"]
+        users = User.objects.filter(email__iexact=email)
 
         if users.exists():
-            # Raise an exception if the user is already created
             raise forms.ValidationError(
                 "Email is already registered to user %(username)s",
                 params={'username': users.first().get_full_name()}
             )
 
-        return cleaned_data
+        return email
 
     def save(self, commit=True):
         """
