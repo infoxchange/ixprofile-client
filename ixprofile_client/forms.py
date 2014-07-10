@@ -42,7 +42,7 @@ class UserCreationForm(UserFormBase):
         Validate that the email is not already registered
         """
         # pylint:disable=no-member
-        email = self.cleaned_data["email"]
+        email = self.cleaned_data['email']
         users = User.objects.filter(email__iexact=email)
 
         if users.exists():
