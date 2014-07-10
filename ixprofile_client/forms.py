@@ -37,6 +37,22 @@ class UserCreationForm(UserFormBase):
     User creation form.
     """
 
+    def clean_email(self):
+        """
+        Validate that the email is not already registered
+        """
+        # pylint:disable=no-member
+        email = self.cleaned_data['email']
+        users = User.objects.filter(email__iexact=email)
+
+        if users.exists():
+            raise forms.ValidationError(
+                "Email is already registered to user %(username)s",
+                params={'username': users.first().get_full_name()}
+            )
+
+        return email
+
     def save(self, commit=True):
         """
         Create the user, registering them on the profile server.
