@@ -1,4 +1,5 @@
 Django
+furl
 IXDjango
 IXWSAuth
 pep8

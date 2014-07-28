@@ -16,6 +16,7 @@ setup(
     long_description=open('README').read(),
     install_requires=[
         "Django >= 1.6.1",
+        "furl >= 0.3.95",
         "python-social-auth >= 0.1.20",
         "pep8 >= 1.4.5",
         "pylint >= 0.27.0",
