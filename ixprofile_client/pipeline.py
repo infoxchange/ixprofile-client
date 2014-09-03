@@ -46,6 +46,7 @@ def match_user(strategy, details, response, uid, *args, **kwargs):
         username = urllib.unquote(match.group(1))
         try:
             # user is known to us
+            # pylint:disable=no-member
             user = User.objects.get(username=username)
             return {
                 'username': username,
