@@ -1,5 +1,15 @@
 """
-Profile Server steps
+Profile Server lettuce steps
+
+Import these steps in your features/steps/__init__.py file:
+    import ixprofile_client.steps
+
+For integration tests refer to integration_example.feature which connect to
+the real profile server.
+
+For functional tests refer to functional_example.feature which uses a mocked
+profile server.
+
 """
 
 import json
