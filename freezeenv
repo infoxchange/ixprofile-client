@@ -1,0 +1,2 @@
+#!/bin/sh
+pip freeze | sed -E 's/#egg=([^-]+)-.+$/#egg=\1-dev/g'

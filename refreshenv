@@ -1,0 +1,10 @@
+#!/bin/bash -e
+if [ -z $VIRTUAL_ENV ]; then
+    . ./startenv
+fi
+
+# pip setup
+if [ -f "requirements.txt" ]; then
+    pip install pip==1.5.6
+    yes w | pip install -r requirements.txt
+fi

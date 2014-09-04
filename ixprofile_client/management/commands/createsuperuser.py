@@ -38,6 +38,7 @@ class Command(BaseCommand):
             raise CommandError("No email given.")
 
         with transaction.atomic():
+            # pylint:disable=no-member
             user, created = User.objects.get_or_create(email=email)
             user.set_password(None)
             user.is_active = True

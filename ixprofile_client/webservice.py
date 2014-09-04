@@ -172,3 +172,6 @@ class UserWebService(object):
         if commit:
             user.save()
         return user
+
+# pylint:disable=invalid-name
+profile_server = UserWebService()
