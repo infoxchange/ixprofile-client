@@ -321,7 +321,8 @@ class MockProfileServer(webservice.UserWebService):
 
 
 @before.each_example  # pylint:disable=no-member
-def initialise_profile_server(scenario):
+# pylint:disable= unused-argument
+def initialise_profile_server(scenario, *args):
     """
     If the feature isn't a profile server integration feature, then mock
     the profile server
