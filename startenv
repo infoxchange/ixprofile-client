@@ -1,0 +1,14 @@
+if [ -z $VIRTUAL_ENV ]; then
+    if [ -f "python_env/bin/activate" ]; then
+        . ./python_env/bin/activate
+    else
+        virtualenv -p $(which python2) python_env
+        . ./python_env/bin/activate
+
+        ./refreshenv
+    fi
+
+    export PATH=$PATH:`npm bin`
+else
+    echo "Already in a virtualenv. Not doing anything!"
+fi

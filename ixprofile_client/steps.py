@@ -30,6 +30,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from lettuce import before, step, world
 from lettuce.django import server
 from lettuce.django.steps.models import hashes_data
+from nose.tools import assert_equals  # pylint:disable=no-name-in-module
 from social.exceptions import AuthException
 
 from ixprofile_client import webservice
@@ -250,6 +251,18 @@ def age_cookie(_, minutes):
 
     session.set_expiry(session.get_expiry_age() - minutes * 60)
     session.save()
+
+
+@step(r'my cookie expires in (\d+) minutes?')
+def check_login_cookie(_, minutes):
+    """
+    Check the expiry of my login cookie
+    """
+
+    minutes = int(minutes)
+    session = get_session()
+
+    assert_equals(session.get_expiry_age(), minutes * 60)
 
 
 class MockProfileServer(webservice.UserWebService):
