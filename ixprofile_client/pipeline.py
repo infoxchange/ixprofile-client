@@ -12,10 +12,7 @@ from django.http import HttpResponseRedirect
 
 from social.exceptions import AuthFailed
 
-from ixprofile_client.webservice import UserWebService
-
-
-webservice = UserWebService()  # pylint:disable=invalid-name
+from ixprofile_client.webservice import profile_server
 
 
 # pylint:disable=unused-argument
@@ -28,16 +25,16 @@ def match_user(strategy, details, response, uid, *args, **kwargs):
 
     # check the user's subscription status
     email = details['email']
-    ws_details = webservice.details(email)
+    ws_details = profile_server.details(email)
 
     if not ws_details['subscribed']:
-        return HttpResponseRedirect("/no-user")
+        return HttpResponseRedirect('/ixlogin/unbox/no-user')
 
-    profile_server = urlparse(settings.PROFILE_SERVER)
+    profile_server_url = urlparse(settings.PROFILE_SERVER)
     user_url = urlparse(uid)
 
-    if profile_server.scheme != user_url.scheme or \
-            profile_server.netloc != user_url.netloc:
+    if profile_server_url.scheme != user_url.scheme or \
+            profile_server_url.netloc != user_url.netloc:
         raise AuthFailed("User from the wrong server")
 
     match = re.match('^/id/u/(.+)$', user_url.path)
