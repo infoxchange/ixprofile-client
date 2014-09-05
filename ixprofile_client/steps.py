@@ -71,6 +71,25 @@ def visit_page(lettuce_step, page):
     _visit_url_wrapper(lettuce_step, site_url(page))
 
 
+def add_profile_server_user(user):
+    """
+    Add the given user to the mock profile server
+    """
+    # Check that we are using the mock profile server
+    assert webservice.profile_server != RealProfileServer,\
+        "Using the real Profile Server"
+
+    groups = []
+    if user.get('groups', False):
+        groups = user['groups'].split(',')
+
+    webservice.profile_server.register({
+        'email': user['email'],
+        'subscribed': user['subscribed'],
+        'groups': groups,
+    })
+
+
 @step('I have users in the fake profile server')
 def add_profile_server_users(self):
     """
@@ -78,15 +97,7 @@ def add_profile_server_users(self):
     """
 
     for row in hashes_data(self):
-        groups = []
-        if row.get('groups', False):
-            groups = row['groups'].split(',')
-
-        webservice.profile_server.register({
-            'email': row['email'],
-            'subscribed': row['subscribed'],
-            'groups': groups,
-        })
+        add_profile_server_user(row)
 
 
 @step(r'The email "([^"]*)" exists in the (?:real|fake) profile server')
@@ -314,6 +325,7 @@ class MockProfileServer(webservice.UserWebService):
         Register a new user
         """
         details = self._user_to_dict(user)
+        details['subscribed'] = True
         self.users[details['email']] = details
 
         return details
@@ -333,22 +345,47 @@ class MockProfileServer(webservice.UserWebService):
         self.users[details['email']]['subscribed'] = True
 
 
-@before.each_example  # pylint:disable=no-member
-# pylint:disable= unused-argument
-def initialise_profile_server(scenario, *args):
+# pylint:disable=invalid-name
+def replace_profile_server_reference(new_reference):
     """
-    If the feature isn't a profile server integration feature, then mock
-    the profile server
+    Replace the reference to the profile server with the given one
     """
-
-    tags = scenario.tags or []
-    new_reference = MockProfileServer()
-
-    if 'integration' in tags and 'profiles' in tags:
-        new_reference = RealProfileServer
-
     webservice.profile_server = new_reference
 
     # Replace profile server on ixprofile_client admin form
     from ixprofile_client import forms as ixprofile_forms
     ixprofile_forms.profile_server = new_reference
+
+    # Replace profile server on ixprofile_client pipeline
+    from ixprofile_client import pipeline as ixprofile_pipeline
+    ixprofile_pipeline.profile_server = new_reference
+
+    # Replace profile server on ixprofile_client create_superuser command
+    from ixprofile_client.management.commands import createsuperuser
+    createsuperuser.profile_server = new_reference
+
+
+@before.each_example  # pylint:disable=no-member
+# pylint:disable= unused-argument
+def initialise_profile_server(scenario=None, *args):
+    """
+    If the feature isn't a profile server integration feature, then mock
+    the profile server
+    """
+
+    tags = []
+    if scenario and scenario.tags:
+        tags = scenario.tags
+    new_reference = MockProfileServer()
+
+    if 'integration' in tags and 'profiles' in tags:
+        new_reference = RealProfileServer
+
+    replace_profile_server_reference(new_reference)
+
+
+def restore_real_profile_server():
+    """
+    Restore reference to the real profile server
+    """
+    replace_profile_server_reference(RealProfileServer)

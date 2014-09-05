@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from ixprofile_client.webservice import UserWebService
+from ixprofile_client.webservice import profile_server
 
 from optparse import make_option
 
@@ -38,15 +38,14 @@ class Command(BaseCommand):
             raise CommandError("No email given.")
 
         with transaction.atomic():
-            # pylint:disable=no-member
+            # pylint:disable=maybe-no-member
             user, created = User.objects.get_or_create(email=email)
             user.set_password(None)
             user.is_active = True
             user.is_staff = True
             user.is_superuser = True
 
-            user_ws = UserWebService()
-            user_ws.connect(user)
+            profile_server.connect(user)
 
             if verbosity >= 1:
                 if created:
