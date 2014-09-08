@@ -16,14 +16,16 @@ import json
 import requests
 import socket
 import urlparse
+from mock import patch
 
 from django.conf import settings
+from django.core import urlresolvers
 from django.contrib.auth import (get_backends,
                                  login,
                                  SESSION_KEY,
                                  BACKEND_SESSION_KEY)
 from django.contrib.auth.models import User
-from django.http import HttpRequest
+from django.http import HttpResponse, HttpResponseRedirect
 
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -187,54 +189,93 @@ def get_session(key=None):
     return engine.SessionStore(session_key=key)
 
 
-@step(r'I logged in with email "([^"]*)" (\d+) minutes? ago')
-def create_login_cookie(lettuce_step, email, minutes):
+import social.apps.django_app.views
+
+real_auth = social.apps.django_app.views.auth
+
+
+class AuthHandler(object):
     """
-    Create a login cookie for the given user
+    A singleton for handling a mocked authentication requests
 
-    Manually add a session with the needed user logged in
-     - Create the session object
-     - Insert the user into it
-     - Form a cookie out of the session object
-     - Add that cookie to the browser
+    This is a singleton because auth_handler.auth() will be cached by
+    Django.
+    """
 
-    Based on code from QIPPS
+    def auth(self, *args, **kwargs):
+        """
+        This method will be cached by Django, all of the smart stuff happens
+        in things we can change
+        """
+
+        return self.use_auth(*args, **kwargs)
+
+    def login_as_user(self, user, minutes=0):
+        """
+        Reset the auth handler to use another time
+        """
+
+        backend = get_backends()[0]
+        user.backend = '{module}.{klass}'.format(
+            module=backend.__module__,
+            klass=backend.__class__.__name__)
+
+        self.ncalled = 0
+        self.user = user
+        self.minutes = minutes
+
+    def fake_auth(self, request, backend):
+        """
+        A mocked auth that logs in as the user I want it to log in as
+        """
+
+        if self.ncalled > 0:
+            return HttpResponse("Autologin code already called")
+
+        self.ncalled += 1
+
+        login(request, self.user)
+
+        request.session.set_expiry(settings.SESSION_COOKIE_AGE -
+                                   self.minutes * 60)
+        request.session.save()
+
+        return HttpResponseRedirect(request.GET['next'])
+
+    def real_auth(self, *args, **kwargs):
+
+        return real_auth(*args, **kwargs)
+
+    use_auth = fake_auth
+
+
+auth_handler = AuthHandler()
+
+
+@step(r'I logged in with email "([^"]*)" (\d+) minutes? ago')
+def create_login_cookie(self, email, minutes):
+    """
+    Create a login for the given user
     """
 
     minutes = int(minutes)
-    session = get_session()
 
     # prepare an authenticated user using the proper backend
     user = User.objects.get(email=email)  # pylint:disable=no-member
-    backend = get_backends()[0]
-    user.backend = '{module}.{klass}'.format(module=backend.__module__,
-                                             klass=backend.__class__.__name__)
+    auth_handler.login_as_user(user, minutes=minutes)
 
-    # put the user into the session
-    session[SESSION_KEY] = user.pk
-    session[BACKEND_SESSION_KEY] = user.backend
-    session.set_expiry(settings.SESSION_COOKIE_AGE - minutes * 60)
-    session.save()
-
-    lettuce_step.given('I visit site page "non-existant-page"')
-    world.browser.add_cookie({
-        'name': settings.SESSION_COOKIE_NAME,
-        'value': session.session_key,
-    })
-
-    # fake a HTTP request to trigger the login hook
-    request = HttpRequest()
-    request.session = session
-    login(request, user)
+    with patch('social.apps.django_app.views.auth',
+               new=auth_handler.auth):
+        self.given('I visit site page ""')
 
 
 @step(r'I log in with email "([^"]*)" and visit site page "([^"]*)"')
-def login_and_visit(lettuce_step, email, page):
+def login_and_visit(self, email, page):
     """
     Login using the given email and then visit the given page
     """
-    lettuce_step.given('I logged in with email "%s" 0 minutes ago' % email)
-    lettuce_step.given('I visit site page "%s"' % page)
+    self.given('I logged in with email "%s" 0 minutes ago' % email)
+    self.given('I visit site page "%s"' % page)
 
 
 @step(r'I left my computer for (\d+) minutes?')
@@ -250,6 +291,11 @@ def age_cookie(_, minutes):
 
     session.set_expiry(session.get_expiry_age() - minutes * 60)
     session.save()
+
+    cookie = world.browser.add_cookie({
+        'name': settings.SESSION_COOKIE_NAME,
+        'value': session.session_key,
+    })
 
 
 class MockProfileServer(webservice.UserWebService):
@@ -329,10 +375,13 @@ def initialise_profile_server(scenario, *args):
     """
 
     tags = scenario.tags or []
-    new_reference = MockProfileServer()
 
     if 'integration' in tags and 'profiles' in tags:
         new_reference = RealProfileServer
+        auth_handler.use_auth = auth_handler.real_auth
+    else:
+        new_reference = MockProfileServer()
+        auth_handler.use_auth = auth_handler.fake_auth
 
     webservice.profile_server = new_reference
 
