@@ -12,10 +12,7 @@ from django.http import HttpResponseRedirect
 
 from social.exceptions import AuthFailed
 
-from ixprofile_client.webservice import UserWebService
-
-
-webservice = UserWebService()  # pylint:disable=invalid-name
+import ixprofile_client.webservice
 
 
 # pylint:disable=unused-argument
@@ -26,8 +23,11 @@ def match_user(strategy, details, response, uid, *args, **kwargs):
     username.
     """
 
+    webservice = ixprofile_client.webservice.profile_server
+
     # check the user's subscription status
     email = details['email']
+
     ws_details = webservice.details(email)
 
     if not ws_details['subscribed']:
