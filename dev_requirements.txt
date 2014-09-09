@@ -7,3 +7,6 @@ pylint
 pylint_mccabe
 python-social-auth
 requests
+mock
+selenium
+lettuce

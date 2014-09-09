@@ -19,11 +19,7 @@ import urlparse
 from mock import patch
 
 from django.conf import settings
-from django.core import urlresolvers
-from django.contrib.auth import (get_backends,
-                                 login,
-                                 SESSION_KEY,
-                                 BACKEND_SESSION_KEY)
+from django.contrib.auth import get_backends, login
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
 
@@ -191,7 +187,7 @@ def get_session(key=None):
 
 import social.apps.django_app.views
 
-real_auth = social.apps.django_app.views.auth
+real_auth = social.apps.django_app.views.auth  # pylint:disable=invalid-name
 
 
 class AuthHandler(object):
@@ -243,13 +239,16 @@ class AuthHandler(object):
         return HttpResponseRedirect(request.GET['next'])
 
     def real_auth(self, *args, **kwargs):
+        """
+        The real authentication method
+        """
 
         return real_auth(*args, **kwargs)
 
     use_auth = fake_auth
 
 
-auth_handler = AuthHandler()
+auth_handler = AuthHandler()  # pylint:disable=invalid-name
 
 
 @step(r'I logged in with email "([^"]*)" (\d+) minutes? ago')
