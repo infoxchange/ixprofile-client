@@ -192,6 +192,8 @@ class UserWebService(object):
 
         response = self._request('GET', url)
 
+        # pylint:disable=no-member
+        # Instance of 'LookupDict' has no 'not_found' member
         if response.status_code == requests.codes.not_found:
             return []
         else:
