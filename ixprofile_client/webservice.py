@@ -2,19 +2,23 @@
 Web service to interact with the profile server user records
 """
 
+import json
+import urllib
+from logging import getLogger
 from urlparse import urljoin
+
+import requests
+from requests.auth import AuthBase
 
 from django.conf import settings
 
 from ixdjango.utils import flatten_auth_header
 from ixwsauth import auth
 
-import json
-
-import requests
-from requests.auth import AuthBase
-
 from ixprofile_client import exceptions
+
+
+LOG = getLogger(__name__)
 
 
 class OAuth(AuthBase):
@@ -172,6 +176,29 @@ class UserWebService(object):
         if commit:
             user.save()
         return user
+
+    def get_group(self, group):
+        """
+        Request the users in a profile server group
+
+        Profile server groups are typically referred to by a URI resource name
+        i.e. http://iss3/service/1234/ -- the names are considered meaningful
+        to the applications.
+        """
+
+        url = urljoin(self.profile_server, urllib.quote(group))
+
+        LOG.debug("Requesting users for group '%s'", url)
+
+        response = self._request('GET', url)
+
+        # pylint:disable=no-member
+        # Instance of 'LookupDict' has no 'not_found' member
+        if response.status_code == requests.codes.not_found:
+            return []
+        else:
+            self._raise_for_failure(response)
+            return response.json()
 
 # pylint:disable=invalid-name
 profile_server = UserWebService()
