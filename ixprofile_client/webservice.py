@@ -3,7 +3,6 @@ Web service to interact with the profile server user records
 """
 
 import json
-import urllib
 from logging import getLogger
 from urlparse import urljoin
 
@@ -55,8 +54,9 @@ class UserWebService(object):
     Web service to interact with the profile server user records
     """
 
-    USER_LIST_URI = "/api/user/"
-    USER_URI = "/api/user/%s/"
+    USER_LIST_URI = "/api/v1/user/"
+    USER_URI = "/api/v1/user/%s/"
+    GROUP_URI = "/api/v1/group/%s/"
 
     register_email_template = None
 
@@ -186,7 +186,8 @@ class UserWebService(object):
         to the applications.
         """
 
-        url = urljoin(self.profile_server, urllib.quote(group))
+        url = urljoin(self.profile_server,
+                      self.GROUP_URI % group)
 
         LOG.debug("Requesting users for group '%s'", url)
 
@@ -198,7 +199,7 @@ class UserWebService(object):
             return []
         else:
             self._raise_for_failure(response)
-            return response.json()
+            return response.json()['users']
 
 # pylint:disable=invalid-name
 profile_server = UserWebService()
