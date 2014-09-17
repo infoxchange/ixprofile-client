@@ -328,19 +328,19 @@ class MockProfileServer(webservice.UserWebService):
         details = {}
         obj_type = type(user)
         details_fields = {
-            'email': True,
-            'first_name': True,
-            'last_name': True,
-            'username': True,
-            'groups': False,
-            'subscribed': False,
+            'email': (True, ''),
+            'first_name': (True, ''),
+            'last_name': (True, ''),
+            'username': (True, ''),
+            'groups': (False, []),
+            'subscribed': (False, False),
         }
 
-        for key, real in details_fields.items():
+        for key, (real, default) in details_fields.items():
             if obj_type == User and real:
                 details[key] = getattr(user, key)
             elif obj_type != User:
-                details[key] = user.get(key, '')
+                details[key] = user.get(key, default)
 
         return details
 
