@@ -201,5 +201,24 @@ class UserWebService(object):
             self._raise_for_failure(response)
             return response.json()['users']
 
+    def add_group(self, user, group):
+        """
+        Add a user to the named group
+        """
+
+        # pylint:disable=protected-access
+
+        data = {
+            'groups': self.details(user.email)['groups'],
+        }
+        data['groups'].append(group)
+
+        response = self._request('PATCH',
+                                 self._detail_uri(user.email),
+                                 data=json.dumps(data))
+        self._raise_for_failure(response)
+
+        return user
+
 # pylint:disable=invalid-name
 profile_server = UserWebService()
