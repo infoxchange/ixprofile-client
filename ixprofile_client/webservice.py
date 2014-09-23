@@ -247,7 +247,6 @@ class UserWebService(object):
 
         try:
             data = response.json()['objects']
-            print "DATA", data
         except (ValueError, KeyError):
             return []
 
