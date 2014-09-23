@@ -218,7 +218,60 @@ class UserWebService(object):
                                  data=json.dumps(data))
         self._raise_for_failure(response)
 
-        return user
+        return response.json()['groups']
+
+    def set_details(self, user, **details):
+        """
+        Set the details for the user
+        """
+
+        response = self._request('PATCH',
+                                 self._detail_uri(user.email),
+                                 data=json.dumps(details))
+        self._raise_for_failure(response)
+
+        return response.json()
+
+    def get_user_data(self, user, key=None):
+        """
+        Get the user data for the user, including an optional key
+        """
+
+        url = self._detail_uri(user.email) + 'preferences/'
+        params = {}
+
+        if key:
+            params['type'] = key
+
+        response = self._request('GET', url, params=params)
+
+        try:
+            data = response.json()['objects']
+            print "DATA", data
+        except (ValueError, KeyError):
+            return []
+
+        return data
+
+    def set_user_data(self, user, key, value):
+        """
+        Set user data for the user. This data is stored as a key-value
+        pair inside the profile server
+        """
+
+        data = {
+            'user': self.USER_URI % user.email,
+            'type': key,
+            'data': value,
+        }
+
+        response = self._request('POST',
+                                 urljoin(self.profile_server,
+                                         '/api/v1/user-preference/'),
+                                 data=json.dumps(data))
+        self._raise_for_failure(response)
+
+        return response.json()
 
 # pylint:disable=invalid-name
 profile_server = UserWebService()

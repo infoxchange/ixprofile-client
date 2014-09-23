@@ -318,6 +318,7 @@ class MockProfileServer(webservice.UserWebService):
     # pylint:disable=super-init-not-called
     def __init__(self):
         self.users = {}
+        self.user_data = {}
         self.groups = {}
 
     @staticmethod
@@ -394,6 +395,46 @@ class MockProfileServer(webservice.UserWebService):
             users = []
 
         return users
+
+    def set_details(self, user, **kwargs):
+        """
+        Set details for the user
+        """
+
+        details = self._user_to_dict(user)
+        self.users[details['email']].update(kwargs)
+
+        return self.users[details['email']]
+
+    def set_user_data(self, user, key, value):
+        """
+        Set user data for user
+        """
+
+        details = self._user_to_dict(user)
+        self.user_data.setdefault(details['email'], []).append({
+            'type': key,
+            'data': value,
+        })
+
+    def get_user_data(self, user, key=None):
+        """
+        Get user data for the user
+        """
+
+        details = self._user_to_dict(user)
+        try:
+            data = self.user_data[details['email']]
+
+            if key:
+                data = [record
+                        for record in data
+                        if record['type'] == key]
+
+            return data
+
+        except KeyError:
+            return []
 
 
 @before.each_example  # pylint:disable=no-member
