@@ -239,12 +239,12 @@ class UserWebService(object):
         """
 
         url = self._detail_uri(user.email) + 'preferences/'
+        params = {}
 
-        # FIXME: signing for these is broken
-        # if key:
-        #     url += '?' + urlencode({'type': key})
+        if key:
+            params['type'] = key
 
-        response = self._request('GET', url)
+        response = self._request('GET', url, params=params)
 
         try:
             data = response.json()['objects']
