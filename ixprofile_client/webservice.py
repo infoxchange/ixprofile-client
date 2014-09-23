@@ -4,7 +4,6 @@ Web service to interact with the profile server user records
 
 import json
 from logging import getLogger
-from urllib import urlencode
 from urlparse import urljoin
 
 import requests
