@@ -395,6 +395,16 @@ class MockProfileServer(webservice.UserWebService):
 
         return users
 
+    def set_details(self, user, **kwargs):
+        """
+        Set details for the user
+        """
+
+        details = self._user_to_dict(user)
+        self.users[details['email']].update(kwargs)
+
+        return self.users[details['email']]
+
 
 @before.each_example  # pylint:disable=no-member
 # pylint:disable= unused-argument
