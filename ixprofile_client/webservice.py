@@ -220,6 +220,25 @@ class UserWebService(object):
 
         return response.json()['groups']
 
+    def remove_group(self, user, group):
+        """
+        Remove a user from the named group
+        """
+
+        # pylint:disable=protected-access
+
+        data = {
+            'groups': self.details(user.email)['groups'],
+        }
+        data['groups'].remove(group)
+
+        response = self._request('PATCH',
+                                 self._detail_uri(user.email),
+                                 data=json.dumps(data))
+        self._raise_for_failure(response)
+
+        return response.json()['groups']
+
     def set_details(self, user, **details):
         """
         Set the details for the user
