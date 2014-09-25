@@ -384,6 +384,15 @@ class MockProfileServer(webservice.UserWebService):
         self.users[details['email']].setdefault('groups', []).append(group)
         self.groups.setdefault(group, []).append(details['email'])
 
+    def remove_group(self, user, group):
+        """
+        Remove a user from a group
+        """
+
+        details = self._user_to_dict(user)
+        self.users[details['email']].setdefault('groups', []).remove(group)
+        self.groups.setdefault(group, []).remove(details['email'])
+
     def get_group(self, group):
         """
         Get the users for the groups
