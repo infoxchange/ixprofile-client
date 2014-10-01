@@ -315,6 +315,8 @@ class MockProfileServer(webservice.UserWebService):
     A mock profile server
     """
 
+    app = 'mock_app'
+
     # pylint:disable=super-init-not-called
     def __init__(self):
         self.users = {}
@@ -333,8 +335,13 @@ class MockProfileServer(webservice.UserWebService):
             'first_name': (True, ''),
             'last_name': (True, ''),
             'username': (True, ''),
+            'phone': (False, ''),
+            'mobile': (False, ''),
+            'state': (False, ''),
             'groups': (False, []),
             'subscribed': (False, False),
+            'subscriptions': (False, {
+            }),
         }
 
         for key, (real, default) in details_fields.items():
@@ -357,23 +364,35 @@ class MockProfileServer(webservice.UserWebService):
         Register a new user
         """
         details = self._user_to_dict(user)
-        self.users[details['email']] = details
+        email = details['email']
+
+        details['subscriptions'][self.app] = details['subscribed']
+        self.users[email] = details
 
         return details
+
+    def _set_subscription(self, user, state):
+        """
+        Update the subscription status to state
+        """
+
+        email = self._user_to_dict(user)['email']
+
+        self.users[email]['subscribed'] = \
+            self.users[email]['subscriptions'][self.app] = state
 
     def unsubscribe(self, user):
         """
         Register an unsubscription request
         """
-        details = self._user_to_dict(user)
-        self.users[details['email']]['subscribed'] = False
+        self._set_subscription(user, False)
 
     def subscribe(self, user):
         """
         Register a subscription request
         """
-        details = self._user_to_dict(user)
-        self.users[details['email']]['subscribed'] = True
+
+        self._set_subscription(user, True)
 
     def add_group(self, user, group):
         """
@@ -381,7 +400,8 @@ class MockProfileServer(webservice.UserWebService):
         """
 
         details = self._user_to_dict(user)
-        self.users[details['email']].setdefault('groups', []).append(group)
+        self.users.setdefault(details['email'],
+                              details)['groups'].append(group)
         self.groups.setdefault(group, []).append(details['email'])
 
     def remove_group(self, user, group):
@@ -410,10 +430,20 @@ class MockProfileServer(webservice.UserWebService):
         Set details for the user
         """
 
-        details = self._user_to_dict(user)
-        self.users[details['email']].update(kwargs)
+        email = self._user_to_dict(user)['email']
 
-        return self.users[details['email']]
+        if not set(kwargs.keys()).issubset(set(self.users[email].keys())):
+            raise Exception("Bad request: %s" % kwargs)
+
+        try:
+            self.users[email]['subscriptions'].update(
+                kwargs.pop('subscriptions'))
+        except KeyError:
+            pass
+
+        self.users[email].update(kwargs)
+
+        return self.users[email]
 
     def set_user_data(self, user, key, value):
         """
