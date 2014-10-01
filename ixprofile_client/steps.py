@@ -379,7 +379,7 @@ class MockProfileServer(webservice.UserWebService):
         email = self._user_to_dict(user)['email']
 
         self.users[email]['subscribed'] = \
-            self.users[email]['subscriptions'][self.key] = state
+            self.users[email]['subscriptions'][self.app] = state
 
     def unsubscribe(self, user):
         """
