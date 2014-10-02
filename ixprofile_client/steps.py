@@ -16,7 +16,6 @@ import json
 import requests
 import socket
 import urlparse
-from mock import patch
 
 from django.conf import settings
 from django.contrib.auth import get_backends, login
@@ -75,6 +74,8 @@ def add_profile_server_users(self):
     Add users into the mock profile server
     """
 
+    assert isinstance(webservice.profile_server, MockProfileServer)
+
     for row in hashes_data(self):
         groups = []
         if row.get('groups', False):
@@ -118,8 +119,12 @@ def confirm_profile_server_users(self):
         details = webservice.profile_server.details(row['email'])
         assert details, "Could not find user: %s" % row['email']
 
-        user = User.objects.create_user(username=details['email'],
-                                        email=details['email'])
+        # pylint:disable=unexpected-keyword-arg,no-value-for-parameter
+        # Pylint doesn't understand metaclasses
+        # https://bitbucket.org/logilab/pylint/issue/353
+        user = User(username=details['username'],
+                    email=details['email'])
+        # pylint:enable=unexpected-keyword-arg,no-value-for-parameter
 
         if row.get('subscribed', True):
             webservice.profile_server.subscribe(user)
@@ -217,19 +222,26 @@ class AuthHandler(object):
             module=backend.__module__,
             klass=backend.__class__.__name__)
 
-        self.ncalled = 0
         self.user = user
         self.minutes = minutes
+
+        assert self.use_auth != self.fake_auth
+        self.use_auth = self.fake_auth
+
+    def fake_no_auth(self, request, backend):
+        """
+        A mocked auth that does nothing.
+        """
+
+        return HttpResponse("Login form")
 
     def fake_auth(self, request, backend):
         """
         A mocked auth that logs in as the user I want it to log in as
         """
 
-        if self.ncalled > 0:
-            return HttpResponse("Autologin code already called")
-
-        self.ncalled += 1
+        # Single use
+        self.use_auth = self.fake_no_auth
 
         login(request, self.user)
 
@@ -250,6 +262,7 @@ class AuthHandler(object):
 
 
 auth_handler = AuthHandler()  # pylint:disable=invalid-name
+social.apps.django_app.views.auth = auth_handler.auth
 
 
 @step(r'I logged in with email "([^"]*)" (\d+) minutes? ago')
@@ -261,12 +274,12 @@ def create_login_cookie(self, email, minutes):
     minutes = int(minutes)
 
     # prepare an authenticated user using the proper backend
-    user = User.objects.get(email=email)  # pylint:disable=no-member
+
+    # pylint:disable=no-member
+    user, _ = User.objects.get_or_create(email=email)
     auth_handler.login_as_user(user, minutes=minutes)
 
-    with patch('social.apps.django_app.views.auth',
-               new=auth_handler.auth):
-        self.given('I visit site page ""')
+    self.given('I visit site page ""')
 
 
 @step(r'I log in with email "([^"]*)" and visit site page "([^"]*)"')
@@ -491,7 +504,7 @@ def initialise_profile_server(scenario, *args):
         auth_handler.use_auth = auth_handler.real_auth
     else:
         new_reference = MockProfileServer()
-        auth_handler.use_auth = auth_handler.fake_auth
+        auth_handler.use_auth = auth_handler.fake_no_auth
 
     webservice.profile_server = new_reference
 
