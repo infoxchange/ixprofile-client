@@ -459,14 +459,14 @@ class MockProfileServer(webservice.UserWebService):
         details = self._user_to_dict(user)
         self.user_data.setdefault(details['email'], []).append(data)
 
-    def delete_user_data(self, id):
+    def delete_user_data(self, id_):
         """
         Delete user data by id
         """
 
         for user_data in self.user_data.values():
             for data in user_data:
-                if data['id'] == id:
+                if data['id'] == id_:
                     user_data.remove(data)
 
     def get_user_data(self, user, key=None):
