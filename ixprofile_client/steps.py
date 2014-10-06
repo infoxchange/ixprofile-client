@@ -475,11 +475,24 @@ class MockProfileServer(webservice.UserWebService):
         Set user data for user
         """
 
-        details = self._user_to_dict(user)
-        self.user_data.setdefault(details['email'], []).append({
+        data = {
             'type': key,
             'data': value,
-        })
+        }
+        data['id'] = id(data)
+
+        details = self._user_to_dict(user)
+        self.user_data.setdefault(details['email'], []).append(data)
+
+    def delete_user_data(self, id_):
+        """
+        Delete user data by id
+        """
+
+        for user_data in self.user_data.values():
+            for data in user_data:
+                if data['id'] == id_:
+                    user_data.remove(data)
 
     def get_user_data(self, user, key=None):
         """

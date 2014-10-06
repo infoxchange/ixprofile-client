@@ -292,5 +292,16 @@ class UserWebService(object):
 
         return response.json()
 
+    def delete_user_data(self, id_):
+        """
+        Delete user data by id
+        """
+
+        response = self._request('DELETE',
+                                 urljoin(self.profile_server,
+                                         '/api/v1/user-preference/%d/' % id_))
+        self._raise_for_failure(response)
+
+
 # pylint:disable=invalid-name
 profile_server = UserWebService()
