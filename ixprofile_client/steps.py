@@ -164,10 +164,22 @@ def login_framed_profile_server(_, username, password):
 
     driver.switch_to_frame(elem)
 
+    def profile_server_ready(driver):
+        """
+        Check that the profile server is loaded - either the username
+        input or the prefilled username are on the page
+        """
+        return driver.find_elements_by_class_name('change-user-link') \
+            or driver.find_element_by_id('id_username').is_displayed()
+
     # we're using the real, live profile server, let's wait a while
-    WebDriverWait(driver, 10).until(
-        lambda x: x.find_element_by_id('id_username').is_displayed()
-    )
+    WebDriverWait(driver, 10).until(profile_server_ready)
+
+    # Maybe they're already logged in
+    elems = driver.find_elements_by_class_name('change-user-link')
+    if elems:
+        elems[0].click()
+        WebDriverWait(driver, 10).until(profile_server_ready)
 
     elem = driver.find_element_by_id('id_username')
     elem.send_keys(username)
