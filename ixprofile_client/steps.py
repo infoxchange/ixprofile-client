@@ -82,9 +82,7 @@ def add_profile_server_users(self):
         else:
             row['groups'] = []
 
-        webservice.profile_server.register({
-            key: row[key] for key in row.keys()
-        })
+        webservice.profile_server.register(row)
 
 
 @step(r'The email "([^"]*)" exists in the (?:real|fake) profile server')
