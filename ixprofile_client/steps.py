@@ -77,14 +77,13 @@ def add_profile_server_users(self):
     assert isinstance(webservice.profile_server, MockProfileServer)
 
     for row in hashes_data(self):
-        groups = []
         if row.get('groups', False):
-            groups = row['groups'].split(',')
+            row['groups'] = row['groups'].split(',')
+        else:
+            row['groups'] = []
 
         webservice.profile_server.register({
-            'email': row['email'],
-            'subscribed': row['subscribed'],
-            'groups': groups,
+            key: row[key] for key in row.keys()
         })
 
 
