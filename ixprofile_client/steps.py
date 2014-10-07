@@ -77,7 +77,9 @@ def add_profile_server_users(self):
     assert isinstance(webservice.profile_server, MockProfileServer)
 
     for row in hashes_data(self):
-        row['groups'] = row.get('groups', '').split(',')
+        row['groups'] = [group.strip()
+                         for group in row.get('groups', '').split(',')
+                         if group != '']
 
         webservice.profile_server.register(row)
 

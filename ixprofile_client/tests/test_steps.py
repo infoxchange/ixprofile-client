@@ -54,7 +54,7 @@ class TestLettuceSteps(object):
         'subscribed': False,
         'subscriptions': {'mock_app': False},
         'username': '',
-        'groups': [''],
+        'groups': [],
     }
 
     expected_users = {
