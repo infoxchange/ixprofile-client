@@ -77,15 +77,11 @@ def add_profile_server_users(self):
     assert isinstance(webservice.profile_server, MockProfileServer)
 
     for row in hashes_data(self):
-        groups = []
-        if row.get('groups', False):
-            groups = row['groups'].split(',')
+        row['groups'] = [group.strip()
+                         for group in row.get('groups', '').split(',')
+                         if group != '']
 
-        webservice.profile_server.register({
-            'email': row['email'],
-            'subscribed': row['subscribed'],
-            'groups': groups,
-        })
+        webservice.profile_server.register(row)
 
 
 @step(r'The email "([^"]*)" exists in the (?:real|fake) profile server')

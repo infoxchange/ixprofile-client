@@ -5,7 +5,10 @@ Test Lettuce Steps
 import django
 
 from django.conf import settings
+from lettuce.core import Feature
 from mock import MagicMock
+# pylint:disable=no-name-in-module
+from nose.tools import assert_equals
 
 # Configure Django it is required by some of the lettuce steps
 settings.configure(
@@ -25,10 +28,68 @@ from ixprofile_client import webservice
 original_profile_server = webservice.profile_server
 
 
+FEATURE1 = """
+Feature: Test fake profile server
+  Scenario: Initialize profile server
+    Given I have users in the fake profile server:
+      | email           | subscribed | first_name | last_name | phone      |
+      | zoidberg@px.ea  | true       | John       | Zoidberg  | 1468023579 |
+      | hmcdoogal@px.ea | false      | Hattie     | McDoogal  |            |
+      | acalculon@px.ea | true       | Antonio    | Calculon  | 0292538800 |
+"""
+
+
 class TestLettuceSteps(object):
     """
     Test Lettuce Steps
     """
+
+    default_details = {
+        'email': '',
+        'first_name': '',
+        'last_name': '',
+        'mobile': '',
+        'phone': '',
+        'state': '',
+        'subscribed': False,
+        'subscriptions': {'mock_app': False},
+        'username': '',
+        'groups': [],
+    }
+
+    expected_users = {
+        u'zoidberg@px.ea': {
+            'subscribed': True,
+            'first_name': u'John',
+            'last_name': u'Zoidberg',
+            'phone': 1468023579,
+        },
+        u'hmcdoogal@px.ea': {
+            'subscribed': False,
+            'first_name': u'Hattie',
+            'last_name': u'McDoogal',
+            'phone': '',
+        },
+        u'acalculon@px.ea': {
+            'subscribed': True,
+            'first_name': u'Antonio',
+            'last_name': u'Calculon',
+            'phone': u'0292538800',
+        },
+    }
+
+    def details_for(self, email):
+        """
+        Return the expected details for the given email
+        """
+        new_details = dict(self.default_details.items() +
+                           self.expected_users[email].items())
+        new_details['email'] = email
+
+        if new_details['subscribed']:
+            new_details['subscriptions']['mock_app'] = True
+
+        return new_details
 
     # pylint:disable=invalid-name
     def setUp(self):
@@ -64,3 +125,14 @@ class TestLettuceSteps(object):
                                         (self.mock_step,))
 
         assert webservice.profile_server != original_profile_server
+
+    def test_add_profile_server_users(self):
+        """
+        Test adding users to the fake profile server
+        """
+        Feature.from_string(FEATURE1).run()
+
+        for email in self.expected_users.keys():
+            stored = webservice.profile_server.details(email)
+
+            assert_equals(self.details_for(email), stored)
