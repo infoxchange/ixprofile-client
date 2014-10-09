@@ -4,7 +4,7 @@ Forms for editing the users backed by the profile server.
 from django import forms
 from django.contrib.auth.models import User
 
-from ixprofile_client.webservice import profile_server
+from ixprofile_client import webservice
 
 # pylint:disable=old-style-class,super-on-old-class
 # Forms are new style classes
@@ -18,7 +18,10 @@ class UserFormBase(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(UserFormBase, self).__init__(*args, **kwargs)
-        self.user_ws = profile_server
+
+    @property
+    def user_ws(self):
+        return webservice.profile_server
 
     class Meta:
         """
