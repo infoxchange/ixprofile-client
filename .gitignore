@@ -1,5 +1,5 @@
 *.pyc
 *.swp
-/env
-/IXProfileClient.egg-info
 .idea/
+/IXProfileClient.egg-info
+/python_env
