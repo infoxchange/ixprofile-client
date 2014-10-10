@@ -32,10 +32,11 @@ FEATURE1 = """
 Feature: Test fake profile server
   Scenario: Initialize profile server
     Given I have users in the fake profile server:
-      | email           | subscribed | first_name | last_name | phone      |
-      | zoidberg@px.ea  | true       | John       | Zoidberg  | 1468023579 |
-      | hmcdoogal@px.ea | false      | Hattie     | McDoogal  |            |
-      | acalculon@px.ea | true       | Antonio    | Calculon  | 0292538800 |
+      | email           | subscribed | first_name | last_name | phone      | subscriptions          |
+      | zoidberg@px.ea  | true       | John       | Zoidberg  | 1468023579 |                        |
+      | hmcdoogal@px.ea | false      | Hattie     | McDoogal  |            |                        |
+      | acalculon@px.ea | true       | Antonio    | Calculon  | 0292538800 |                        |
+      | mendoza@mcog.fr | true       | Mendoza    | Unknown   | 0292538800 | golden-condor, solaris |
 """
 
 
@@ -76,6 +77,16 @@ class TestLettuceSteps(object):
             'last_name': u'Calculon',
             'phone': u'0292538800',
         },
+        u'mendoza@mcog.fr' : {
+            'sybscribed': True,
+            'first_name': u'Mendoza',
+            'last_name': u'unknown',
+            'phone': '',
+            'subscriptions': {
+                u'golden-condor': True,
+                u'solaris': True,
+            },
+        }
     }
 
     def details_for(self, email):
