@@ -72,6 +72,8 @@ def visit_page(lettuce_step, page):
 def add_profile_server_users(self):
     """
     Add users into the mock profile server
+
+    User subscriptions may be supplied as a comma separated string
     """
 
     assert isinstance(webservice.profile_server, MockProfileServer)
@@ -80,6 +82,13 @@ def add_profile_server_users(self):
         row['groups'] = [group.strip()
                          for group in row.get('groups', '').split(',')
                          if group != '']
+
+        subscriptions = {}
+        subscription_apps = row.pop('subscriptions', '').split(',')
+        if subscription_apps[0]:
+            for app in subscription_apps:
+                subscriptions[app] = True
+            row['subscriptions'] = subscriptions
 
         webservice.profile_server.register(row)
 
