@@ -28,7 +28,8 @@ from ixprofile_client import webservice
 # pylint:disable=invalid-name
 original_profile_server = webservice.profile_server
 
-feature1_filename = os.path.join(os.path.dirname(__file__), 'FEATURE1.feature')
+feature1_filename = os.path.join(os.path.dirname(__file__),
+                                 'test_feature.feature')
 with open(feature1_filename) as feature1_file:
     FEATURE1 = feature1_file.read()
 
