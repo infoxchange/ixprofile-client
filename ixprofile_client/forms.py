@@ -21,6 +21,9 @@ class UserFormBase(forms.ModelForm):
 
     @property
     def user_ws(self):
+        """
+        Ensures user_ws is the mocked profile_server.
+        """
         return webservice.profile_server
 
     class Meta:
