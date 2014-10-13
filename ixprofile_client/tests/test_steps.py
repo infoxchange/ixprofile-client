@@ -3,6 +3,7 @@ Test Lettuce Steps
 """
 
 import django
+import os
 
 from django.conf import settings
 from lettuce.core import Feature
@@ -27,16 +28,10 @@ from ixprofile_client import webservice
 # pylint:disable=invalid-name
 original_profile_server = webservice.profile_server
 
-
-FEATURE1 = """
-Feature: Test fake profile server
-  Scenario: Initialize profile server
-    Given I have users in the fake profile server:
-      | email           | subscribed | first_name | last_name | phone      |
-      | zoidberg@px.ea  | true       | John       | Zoidberg  | 1468023579 |
-      | hmcdoogal@px.ea | false      | Hattie     | McDoogal  |            |
-      | acalculon@px.ea | true       | Antonio    | Calculon  | 0292538800 |
-"""
+feature1_filename = os.path.join(os.path.dirname(__file__),
+                                 'test_feature.feature')
+with open(feature1_filename) as feature1_file:
+    FEATURE1 = feature1_file.read()
 
 
 class TestLettuceSteps(object):
@@ -68,7 +63,7 @@ class TestLettuceSteps(object):
             'subscribed': False,
             'first_name': u'Hattie',
             'last_name': u'McDoogal',
-            'phone': '',
+            'phone': u'',
         },
         u'acalculon@px.ea': {
             'subscribed': True,
@@ -76,6 +71,16 @@ class TestLettuceSteps(object):
             'last_name': u'Calculon',
             'phone': u'0292538800',
         },
+        u'mendoza@mcog.fr': {
+            'subscribed': True,
+            'first_name': u'Mendoza',
+            'last_name': u'Unknown',
+            'phone': u'',
+            'subscriptions': {
+                u'golden-condor': True,
+                u'solaris': True,
+            },
+        }
     }
 
     def details_for(self, email):
