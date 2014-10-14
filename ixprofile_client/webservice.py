@@ -206,13 +206,15 @@ class UserWebService(object):
         """
         Add a user to the named group
         """
+        return self.add_groups(user, (group, ))
 
-        # pylint:disable=protected-access
-
+    def add_groups(self, user, groups):
+        """
+        Add a user to the list of named groups
+        """
         data = {
-            'groups': self.details(user.email)['groups'],
+            'groups': list(set(self.details(user.email)['groups'] + groups)),
         }
-        data['groups'].append(group)
 
         response = self._request('PATCH',
                                  self._detail_uri(user.email),
@@ -225,13 +227,17 @@ class UserWebService(object):
         """
         Remove a user from the named group
         """
+        return self.remove_groups(user, (group, ))
 
-        # pylint:disable=protected-access
-
+    def remove_groups(self, user, groups):
+        """
+        Remove a user from multiple groups
+        """
         data = {
-            'groups': self.details(user.email)['groups'],
+            'groups': list(set([group
+                                for group in self.details(user.email)['groups']
+                                if group not in groups])),
         }
-        data['groups'].remove(group)
 
         response = self._request('PATCH',
                                  self._detail_uri(user.email),
