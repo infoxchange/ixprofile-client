@@ -206,7 +206,7 @@ class UserWebService(object):
         """
         Add a user to the named group
         """
-        return self.add_groups(user, (group, ))
+        return self.add_groups(user, (group,))
 
     def add_groups(self, user, groups):
         """
@@ -227,16 +227,15 @@ class UserWebService(object):
         """
         Remove a user from the named group
         """
-        return self.remove_groups(user, (group, ))
+        return self.remove_groups(user, (group,))
 
     def remove_groups(self, user, groups):
         """
         Remove a user from multiple groups
         """
         data = {
-            'groups': list(set([group
-                                for group in self.details(user.email)['groups']
-                                if group not in groups])),
+            'groups': list(set(self.details(user.email)['groups'])
+                           - set(groups)),
         }
 
         response = self._request('PATCH',
