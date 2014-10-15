@@ -428,7 +428,7 @@ class MockProfileServer(webservice.UserWebService):
         """
         Add a user to a group
         """
-        return self.add_groups(user, (group,))
+        return self.add_groups(user, [group])
 
     def add_groups(self, user, groups):
         """
@@ -447,7 +447,7 @@ class MockProfileServer(webservice.UserWebService):
         """
         Remove a user from a group
         """
-        return self.remove_groups(user, (group,))
+        return self.remove_groups(user, [group])
 
     def remove_groups(self, user, groups):
         """

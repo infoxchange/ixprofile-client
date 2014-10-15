@@ -206,7 +206,7 @@ class UserWebService(object):
         """
         Add a user to the named group
         """
-        return self.add_groups(user, (group,))
+        return self.add_groups(user, [group])
 
     def add_groups(self, user, groups):
         """
@@ -227,7 +227,7 @@ class UserWebService(object):
         """
         Remove a user from the named group
         """
-        return self.remove_groups(user, (group,))
+        return self.remove_groups(user, [group])
 
     def remove_groups(self, user, groups):
         """
