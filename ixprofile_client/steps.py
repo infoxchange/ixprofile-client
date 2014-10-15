@@ -428,20 +428,40 @@ class MockProfileServer(webservice.UserWebService):
         """
         Add a user to a group
         """
+        return self.add_groups(user, (group,))
 
+    def add_groups(self, user, groups):
+        """
+        Add a user to a list of groups
+        """
         details = self._user_to_dict(user)
-        self.users.setdefault(details['email'],
-                              details)['groups'].append(group)
-        self.groups.setdefault(group, []).append(details['email'])
+        user = self.users.setdefault(details['email'], details)
+        user['groups'] = list(set(user['groups'] + groups))
+
+        for group in groups:
+            self.groups.setdefault(group, []).append(details['email'])
+
+        return user['groups']
 
     def remove_group(self, user, group):
         """
         Remove a user from a group
         """
+        return self.remove_groups(user, (group,))
 
+    def remove_groups(self, user, groups):
+        """
+        Remove a user from multiple groups
+        """
         details = self._user_to_dict(user)
-        self.users[details['email']].setdefault('groups', []).remove(group)
-        self.groups.setdefault(group, []).remove(details['email'])
+        user = self.users[details['email']]
+        user['groups'] = list(set(user.setdefault('groups', []))
+                              - set(groups)),
+
+        for group in groups:
+            self.groups.setdefault(group, []).remove(details['email'])
+
+        return user['groups']
 
     def get_group(self, group):
         """

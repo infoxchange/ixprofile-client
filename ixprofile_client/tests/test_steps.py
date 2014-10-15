@@ -20,7 +20,7 @@ settings.configure(
     PROFILE_SERVER_KEY='dummy_key',
     PROFILE_SERVER_SECRET='dummy_secret',
     DEBUG=True)
-django.setup()
+django.setup()  # pylint:disable=no-member
 
 from ixprofile_client import steps
 from ixprofile_client import webservice
