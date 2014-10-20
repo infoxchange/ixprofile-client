@@ -27,7 +27,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from lettuce import before, step, world
 from lettuce.django import server
 from lettuce.django.steps.models import hashes_data
-from nose.tools import assert_equals  # pylint:disable=no-name-in-module
+# pylint:disable=no-name-in-module
+from nose.tools import assert_equals, assert_in, assert_not_in
 from social.exceptions import AuthException
 
 from ixprofile_client import webservice
@@ -112,6 +113,26 @@ def no_user_on_profile_server(self):
     for row in self.hashes:
         details = webservice.profile_server.details(row['email'])
         assert not details, "User present: %s" % row['email']
+
+
+@step(r'The email "([^"]*)" is part of group "([^"]*)" in the (?:real|fake) '
+      r'profile server')
+def user_in_ps_group(_, email, group):
+    """
+    Check that the user is part of the profile server group
+    """
+    users = webservice.profile_server.get_group(group)
+    assert_in(email, [user['email'] for user in users])
+
+
+@step(r'The email "([^"]*)" is not part of group "([^"]*)" in the '
+      r'(?:real|fake) profile server')
+def user_not_in_ps_group(_, email, group):
+    """
+    Check that the user is not part of the profile server group
+    """
+    users = webservice.profile_server.get_group(group)
+    assert_not_in(email, [user['email'] for user in users])
 
 
 @step('I have users in the real profile server')
