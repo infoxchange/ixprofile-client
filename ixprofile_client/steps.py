@@ -476,8 +476,7 @@ class MockProfileServer(webservice.UserWebService):
         """
         details = self._user_to_dict(user)
         user = self.users[details['email']]
-        user['groups'] = list(set(user.setdefault('groups', []))
-                              - set(groups)),
+        user['groups'] = list(set(user.get('groups', [])) - set(groups))
 
         for group in groups:
             self.groups.setdefault(group, []).remove(details['email'])
