@@ -149,10 +149,13 @@ class UserWebService(object):
         """
         data = {
             'email': user.email,
-            'username': user.username,
             'first_name': user.first_name,
             'last_name': user.last_name,
         }
+
+        if user.username:
+            data['username'] = user.username
+
         if self.register_email_template is not None:
             data['email_template'] = self.register_email_template
         response = self._request('POST', self._list_uri(),
