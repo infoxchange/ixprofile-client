@@ -32,6 +32,7 @@ from nose.tools import assert_equals, assert_in, assert_not_in
 from social.exceptions import AuthException
 
 from ixprofile_client import webservice
+from ixprofile_client import EmailNotUnique
 
 # The real profile server, used for integration tests
 RealProfileServer = webservice.profile_server  # pylint:disable=invalid-name
@@ -92,6 +93,14 @@ def add_profile_server_users(self):
             row['subscriptions'] = subscriptions
 
         webservice.profile_server.register(row)
+
+
+@step('I have multiple users in the fake profile server with email "([^"]*)"')
+def add_nonunique_email(_, email):
+    """
+    Subsequent to this, details(email) will throw EmailNotUnique
+    """
+    webservice.profile_server.not_unqiue_emails.append(email)
 
 
 @step(r'The email "([^"]*)" exists in the (?:real|fake) profile server')
@@ -367,6 +376,7 @@ class MockProfileServer(webservice.UserWebService):
     """
 
     app = 'mock_app'
+    not_unqiue_emails = []
 
     # pylint:disable=super-init-not-called
     def __init__(self):
@@ -407,8 +417,12 @@ class MockProfileServer(webservice.UserWebService):
         """
         Return a user's details
         """
+        try:
+            self.not_unqiue_emails.index(email)
+        except ValueError:
+            return self.users.get(email, None)
 
-        return self.users.get(email, None)
+        raise EmailNotUnique
 
     def register(self, user):
         """
