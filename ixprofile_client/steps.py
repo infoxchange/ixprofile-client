@@ -416,13 +416,12 @@ class MockProfileServer(webservice.UserWebService):
     def details(self, email):
         """
         Return a user's details
+        Raises EmailNotUnique if add_nonunique_email() was run with the email
         """
-        try:
-            self.not_unique_emails.index(email)
-        except ValueError:
-            return self.users.get(email, None)
+        if email in self.not_unique_emails:
+            raise EmailNotUnique(email)
 
-        raise EmailNotUnique
+        return self.users.get(email, None)
 
     def register(self, user):
         """
