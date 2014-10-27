@@ -32,7 +32,7 @@ from nose.tools import assert_equals, assert_in, assert_not_in
 from social.exceptions import AuthException
 
 from ixprofile_client import webservice
-from ixprofile_client import EmailNotUnique
+from ixprofile_client.exceptions import EmailNotUnique
 
 # The real profile server, used for integration tests
 RealProfileServer = webservice.profile_server  # pylint:disable=invalid-name
