@@ -100,7 +100,7 @@ def add_nonunique_email(_, email):
     """
     Subsequent to this, details(email) will throw EmailNotUnique
     """
-    webservice.profile_server.not_unqiue_emails.append(email)
+    webservice.profile_server.not_unique_emails.append(email)
 
 
 @step(r'The email "([^"]*)" exists in the (?:real|fake) profile server')
@@ -376,7 +376,7 @@ class MockProfileServer(webservice.UserWebService):
     """
 
     app = 'mock_app'
-    not_unqiue_emails = []
+    not_unique_emails = []
 
     # pylint:disable=super-init-not-called
     def __init__(self):
@@ -418,7 +418,7 @@ class MockProfileServer(webservice.UserWebService):
         Return a user's details
         """
         try:
-            self.not_unqiue_emails.index(email)
+            self.not_unique_emails.index(email)
         except ValueError:
             return self.users.get(email, None)
 
