@@ -80,6 +80,8 @@ class UserWebService(object):
         if method != 'GET':
             kwargs.setdefault('headers', {}).\
                 setdefault('Content-Type', 'application/json')
+        elif method is 'GET':
+            kwargs.setdefault('params', {}).setdefault('limit', 0)
 
         return requests.request(
             method,
