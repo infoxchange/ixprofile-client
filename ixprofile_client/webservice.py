@@ -81,9 +81,6 @@ class UserWebService(object):
             kwargs.setdefault('headers', {}).\
                 setdefault('Content-Type', 'application/json')
 
-        if method == 'GET':
-            kwargs.setdefault('params', {}).setdefault('limit', 0)
-
         return requests.request(
             method,
             url,
@@ -269,7 +266,7 @@ class UserWebService(object):
         """
 
         url = self._detail_uri(user.email) + 'preferences/'
-        params = {}
+        params = {'limit': 0}
 
         if key:
             params['type'] = key
