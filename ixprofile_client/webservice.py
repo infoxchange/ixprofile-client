@@ -4,7 +4,7 @@ Web service to interact with the profile server user records
 
 import json
 from logging import getLogger
-from urlparse import urljoin
+from urlparse import parse_qs, urljoin, urlparse
 
 import requests
 from requests.auth import AuthBase
@@ -38,7 +38,7 @@ class OAuth(AuthBase):
         payload = {
             'method': request.method,
             'url': request.url,
-            'params': {},
+            'params': parse_qs(urlparse(request.url).query),
         }
         auth_man = auth.AuthManager()
         signed_payload = auth_man.oauth_signed_payload(self, payload)
