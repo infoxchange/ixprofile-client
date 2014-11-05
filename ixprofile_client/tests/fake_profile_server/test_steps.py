@@ -2,6 +2,8 @@
 Test Lettuce Steps
 """
 
+from __future__ import absolute_import
+
 import os
 
 from lettuce.core import Feature
@@ -9,8 +11,8 @@ from mock import MagicMock
 # pylint:disable=no-name-in-module
 from nose.tools import assert_equals
 
-from .. import steps
-from .. import webservice
+from ... import steps
+from ... import webservice
 
 # pylint:disable=invalid-name
 original_profile_server = webservice.profile_server

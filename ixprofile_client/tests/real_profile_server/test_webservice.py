@@ -1,54 +1,19 @@
 """
-Test Lettuce Steps
+Test webservice
 """
 
 from __future__ import absolute_import
 
-import os
-import unittest
-
-from django.conf import settings
 from mock import MagicMock
 # pylint:disable=no-name-in-module
 from nose.tools import assert_equals, assert_in
 
-from ..docker_settings import (
-    PROFILE_SERVER,
-    PROFILE_SERVER_KEY,
-    PROFILE_SERVER_SECRET,
-)
-from ..webservice import UserWebService
-
-settings_monkeypatches = {}  # pylint:disable=invalid-name
-SSL_CA_FILE = os.environ.get('SSL_CA_FILE')
+from . import RealProfileServerTestCase
 
 
-def set_django_setting(name, value):
+class TestWebservice(RealProfileServerTestCase):
     """
-    Set a Django setting
-    """
-    if name not in settings_monkeypatches:
-        settings_monkeypatches[name] = getattr(settings, name)
-
-    # pylint:disable=protected-access
-    setattr(settings._wrapped, name, value)
-
-
-def reset_django_settings():
-    """
-    Restore Django settings
-    """
-    for name, value in settings_monkeypatches.items():
-        # pylint:disable=protected-access
-        setattr(settings._wrapped, name, value)
-
-
-class TestRealProfileServer(unittest.TestCase):
-    """
-    Test real profile server, these tests only run when the ENV variables are
-    set:
-    PROFILE_SERVER_URL=https://KEY:SECRET@profile.server
-    SSL_CA_FILE=path/to/ssl_ca_certificate.crt
+    Test webservice
     """
 
     APP = 'ixprofile_client_test'
@@ -60,17 +25,7 @@ class TestRealProfileServer(unittest.TestCase):
         """
         Initialise test case
         """
-        if not PROFILE_SERVER:
-            raise unittest.case.SkipTest("Profile Server not configured")
-        if not SSL_CA_FILE:
-            raise unittest.case.SkipTest("SSL_CA_FILE not configured")
-
-        set_django_setting('PROFILE_SERVER', PROFILE_SERVER)
-        set_django_setting('PROFILE_SERVER_KEY', PROFILE_SERVER_KEY)
-        set_django_setting('PROFILE_SERVER_SECRET', PROFILE_SERVER_SECRET)
-        set_django_setting('SSL_CA_FILE', SSL_CA_FILE)
-
-        cls.profile_server = UserWebService()
+        super(TestWebservice, cls).setUpClass()
 
         # Remove any preference left from failed tests
         cls.remove_populated_preferences()
@@ -83,7 +38,7 @@ class TestRealProfileServer(unittest.TestCase):
         # Remove any preferences created for the test
         cls.remove_populated_preferences()
 
-        reset_django_settings()
+        super(TestWebservice, cls).tearDownClass()
 
     def populate_user_preferences(self, total):
         """
