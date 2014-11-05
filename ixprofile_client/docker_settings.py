@@ -6,11 +6,16 @@ import os
 
 from furl import furl
 
-# Set key and secret, then remove from profiles URL
-# pylint:disable=invalid-name
-_profile_server_url = furl(os.environ.get('PROFILE_SERVER_URL'))
-PROFILE_SERVER_KEY = _profile_server_url.username
-PROFILE_SERVER_SECRET = _profile_server_url.password
+PROFILE_SERVER = None
+PROFILE_SERVER_KEY = None
+PROFILE_SERVER_SECRET = None
 
-_profile_server_url.remove(username=True, password=True)
-PROFILE_SERVER = _profile_server_url.url
+if 'PROFILE_SERVER_URL' in os.environ:
+    # Set key and secret, then remove from profiles URL
+    # pylint:disable=invalid-name
+    _profile_server_url = furl(os.environ.get('PROFILE_SERVER_URL'))
+    PROFILE_SERVER_KEY = _profile_server_url.username
+    PROFILE_SERVER_SECRET = _profile_server_url.password
+
+    _profile_server_url.remove(username=True, password=True)
+    PROFILE_SERVER = _profile_server_url.url

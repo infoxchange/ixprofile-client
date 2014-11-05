@@ -21,8 +21,6 @@ from ..webservice import UserWebService
 
 settings_monkeypatches = {}  # pylint:disable=invalid-name
 SSL_CA_FILE = os.environ.get('SSL_CA_FILE')
-if 'PROFILE_SERVER_URL' not in os.environ:
-    PROFILE_SERVER = None
 
 
 def set_django_setting(name, value):
@@ -67,7 +65,7 @@ class TestRealProfileServer(unittest.TestCase):
         # This is necessary because setUpClass is executed even if the class
         # is skipped
         if not PROFILE_SERVER or not SSL_CA_FILE:
-            return
+            raise unittest.case.SkipTest
 
         set_django_setting('PROFILE_SERVER', PROFILE_SERVER)
         set_django_setting('PROFILE_SERVER_KEY', PROFILE_SERVER_KEY)
@@ -84,11 +82,6 @@ class TestRealProfileServer(unittest.TestCase):
         """
         Clean up after test case
         """
-        # This is necessary because tearDownClass is executed even if the class
-        # is skipped
-        if not PROFILE_SERVER or not SSL_CA_FILE:
-            return
-
         # Remove any preferences created for the test
         cls.remove_populated_preferences()
 
