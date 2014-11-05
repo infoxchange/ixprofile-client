@@ -2,28 +2,15 @@
 Test Lettuce Steps
 """
 
-import django
 import os
 
-from django.conf import settings
 from lettuce.core import Feature
 from mock import MagicMock
 # pylint:disable=no-name-in-module
 from nose.tools import assert_equals
 
-# Configure Django it is required by some of the lettuce steps
-settings.configure(
-    CACHES={'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        }},
-    PROFILE_SERVER='dummy_server',
-    PROFILE_SERVER_KEY='dummy_key',
-    PROFILE_SERVER_SECRET='dummy_secret',
-    DEBUG=True)
-django.setup()  # pylint:disable=no-member
-
-from ixprofile_client import steps
-from ixprofile_client import webservice
+from .. import steps
+from .. import webservice
 
 # pylint:disable=invalid-name
 original_profile_server = webservice.profile_server
