@@ -43,8 +43,6 @@ def reset_django_settings():
         setattr(settings._wrapped, name, value)
 
 
-@unittest.skipUnless(PROFILE_SERVER, "Profile Server not configured")
-@unittest.skipUnless(SSL_CA_FILE, "SSL_CA_FILE not configured")
 class TestRealProfileServer(unittest.TestCase):
     """
     Test real profile server, these tests only run when the ENV variables are
@@ -62,10 +60,10 @@ class TestRealProfileServer(unittest.TestCase):
         """
         Initialise test case
         """
-        # This is necessary because setUpClass is executed even if the class
-        # is skipped
-        if not PROFILE_SERVER or not SSL_CA_FILE:
-            raise unittest.case.SkipTest
+        if not PROFILE_SERVER:
+            raise unittest.case.SkipTest("Profile Server not configured")
+        if not SSL_CA_FILE:
+            raise unittest.case.SkipTest("SSL_CA_FILE not configured")
 
         set_django_setting('PROFILE_SERVER', PROFILE_SERVER)
         set_django_setting('PROFILE_SERVER_KEY', PROFILE_SERVER_KEY)
