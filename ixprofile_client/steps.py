@@ -324,6 +324,15 @@ def create_login_cookie(self, email, minutes):
 
     # pylint:disable=no-member
     user, _ = User.objects.get_or_create(email=email)
+
+    # The user won't go through the python-social-auth pipeline,
+    # update their details manually
+    details = webservice.profile_server.details(email)
+    for detail in ('username', 'first_name', 'last_name'):
+        if details.get(detail, None):
+            setattr(user, detail, details[detail])
+    user.save()
+
     auth_handler.login_as_user(user, minutes=minutes)
 
     self.given('I visit site page ""')
