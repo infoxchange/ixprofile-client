@@ -500,11 +500,11 @@ class MockProfileServer(webservice.UserWebService):
         user = self.users[details['email']]
         user['groups'] = list(set(user.get('groups', [])) - set(groups))
 
-        try:
-            for group in groups:
+        for group in groups:
+            try:
                 self.groups.setdefault(group, []).remove(details['email'])
-        except ValueError:
-            pass
+            except ValueError:
+                pass
 
         return user['groups']
 
