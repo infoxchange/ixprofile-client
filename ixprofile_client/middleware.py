@@ -4,7 +4,7 @@ Middleware specific to ixprofile_client
 
 from ixprofile_client.exceptions import EmailNotUnique
 from django.conf import settings
-from django.http import HttpResponse
+from django.template.response import SimpleTemplateResponse
 
 
 class PrintEmailNotUniqueMessage(object):
@@ -20,7 +20,4 @@ class PrintEmailNotUniqueMessage(object):
         the chain from running.
         """
         if isinstance(exception, EmailNotUnique) and not settings.DEBUG:
-            return HttpResponse('Could not log in. There is more than account '
-                                'with this email address! Please contact '
-                                'Infoxchange to resolve this issue.'
-                                )
+            return SimpleTemplateResponse('email_not_unique.html')
