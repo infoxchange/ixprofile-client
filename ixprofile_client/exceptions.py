@@ -28,7 +28,10 @@ class EmailNotUnique(ProfileServerException):
         """
         Unicode representation of the exception
         """
-        return "Email %s is not unique on the profile server." % self.email
+        return ("Email %s is not unique on the profile server. "
+                "Consider installing the "
+                "PrintEmailNotUniqueMessage Middleware." % self.email
+                )
 
     def __repr__(self):
         """
