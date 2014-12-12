@@ -17,7 +17,8 @@ from ...docker_settings import (
 from ...webservice import UserWebService
 
 settings_monkeypatches = {}  # pylint:disable=invalid-name
-SSL_CA_FILE = os.environ.get('SSL_CA_FILE')
+SSL_CA_FILE = os.environ.get('SSL_CA_FILE',
+                             '/etc/ssl/certs/ca-certificates.crt')
 
 
 def set_django_setting(name, value):
