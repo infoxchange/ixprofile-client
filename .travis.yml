@@ -2,7 +2,8 @@ language: python
 python:
     - "2.7"
 install:
-    - ./refreshenv
+    - pip install -r requirements.txt
+    - pip install -r test_requirements.txt
 script:
     - .githooks/pre-commit -f
     - nosetests
