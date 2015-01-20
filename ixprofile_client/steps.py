@@ -12,9 +12,13 @@ profile server.
 
 """
 
+from __future__ import division
+
 import json
+import math
 import requests
 import socket
+import time
 import urlparse
 
 from django.conf import settings
@@ -226,18 +230,6 @@ def login_framed_profile_server(_, username, password):
     driver.switch_to_default_content()
 
 
-def get_session(key=None):
-    """
-    Get the user's session
-    """
-
-    # create the session object
-    from django.utils.importlib import import_module
-
-    engine = import_module(settings.SESSION_ENGINE)
-    return engine.SessionStore(session_key=key)
-
-
 import social.apps.django_app.views
 
 real_auth = social.apps.django_app.views.auth  # pylint:disable=invalid-name
@@ -259,7 +251,7 @@ class AuthHandler(object):
 
         return self.use_auth(*args, **kwargs)
 
-    def login_as_user(self, user, minutes=0):
+    def login_as_user(self, user):
         """
         Reset the auth handler to use another time
         """
@@ -270,7 +262,6 @@ class AuthHandler(object):
             klass=backend.__class__.__name__)
 
         self.user = user
-        self.minutes = minutes
 
         assert self.use_auth != self.fake_auth
         self.use_auth = self.fake_auth
@@ -291,10 +282,6 @@ class AuthHandler(object):
         self.use_auth = self.fake_no_auth
 
         login(request, self.user)
-
-        request.session.set_expiry(settings.SESSION_COOKIE_AGE -
-                                   self.minutes * 60)
-        request.session.save()
 
         return HttpResponseRedirect(request.GET['next'])
 
@@ -333,9 +320,10 @@ def create_login_cookie(self, email, minutes):
             setattr(user, detail, details[detail])
     user.save()
 
-    auth_handler.login_as_user(user, minutes=minutes)
+    auth_handler.login_as_user(user)
 
     self.given('I visit site page ""')
+    self.given('I left my computer for {0} minutes'.format(minutes))
 
 
 @step(r'I log in with email "([^"]*)" and visit site page "([^"]*)"')
@@ -354,16 +342,15 @@ def age_cookie(_, minutes):
     """
 
     cookie = world.browser.get_cookie(settings.SESSION_COOKIE_NAME)
-
     minutes = int(minutes)
-    session = get_session(key=cookie['value'])
 
-    session.set_expiry(session.get_expiry_age() - minutes * 60)
-    session.save()
+    expiry = int(time.time()) + settings.SESSION_COOKIE_AGE - minutes * 60
 
-    cookie = world.browser.add_cookie({
-        'name': settings.SESSION_COOKIE_NAME,
-        'value': session.session_key,
+    world.browser.add_cookie({
+        'name': cookie['name'],
+        'value': cookie['value'],
+        'path': '/',
+        'expiry': expiry,
     })
 
 
@@ -373,10 +360,12 @@ def check_login_cookie(_, minutes):
     Check the expiry of my login cookie
     """
 
+    cookie = world.browser.get_cookie(settings.SESSION_COOKIE_NAME)
     minutes = int(minutes)
-    session = get_session()
 
-    assert_equals(session.get_expiry_age(), minutes * 60)
+    expiry_time = cookie['expiry'] - int(time.time())
+
+    assert_equals(math.ceil(expiry_time / 60), minutes)
 
 
 class MockProfileServer(webservice.UserWebService):
