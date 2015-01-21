@@ -341,17 +341,27 @@ def age_cookie(_, minutes):
     Age the cookie
     """
 
-    cookie = world.browser.get_cookie(settings.SESSION_COOKIE_NAME)
     minutes = int(minutes)
 
-    expiry = int(time.time()) + settings.SESSION_COOKIE_AGE - minutes * 60
+    cookie = world.browser.get_cookie(settings.SESSION_COOKIE_NAME)
+    if not cookie:
+        # Already expired
+        return
 
-    world.browser.add_cookie({
-        'name': cookie['name'],
-        'value': cookie['value'],
-        'path': '/',
-        'expiry': expiry,
-    })
+    expiry = cookie['expiry'] - minutes * 60
+    now = int(time.time())
+
+    # Selenium still sends a cookie if it is added with expiry date in the
+    # past. Explicitly delete it in that case.
+    if expiry > now:
+        world.browser.add_cookie({
+            'name': cookie['name'],
+            'value': cookie['value'],
+            'path': '/',
+            'expiry': expiry,
+        })
+    else:
+        world.browser.delete_cookie(settings.SESSION_COOKIE_NAME)
 
 
 @step(r'my cookie expires in (\d+) minutes?')
