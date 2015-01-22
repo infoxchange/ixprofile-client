@@ -360,7 +360,7 @@ def age_cookie(_, minutes):
     expiry = cookie['expiry'] - minutes * 60
     now = int(time.time())
 
-    # Selenium still sends a cookie if it is added with expiry date in the
+    # PhantomJS still sends a cookie if it is added with expiry date in the
     # past. Explicitly delete it in that case.
     if expiry > now:
         world.browser.add_cookie({
