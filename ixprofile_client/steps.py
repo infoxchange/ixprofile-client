@@ -18,8 +18,8 @@ import json
 import math
 import requests
 import socket
-import time
 import urlparse
+from time import time
 
 from django.conf import settings
 from django.contrib.auth import get_backends, login
@@ -358,7 +358,7 @@ def age_cookie(_, minutes):
         return
 
     expiry = cookie['expiry'] - minutes * 60
-    now = int(time.time())
+    now = int(time())
 
     # PhantomJS still sends a cookie if it is added with expiry date in the
     # past. Explicitly delete it in that case.
@@ -382,7 +382,7 @@ def check_login_cookie(_, minutes):
     cookie = world.browser.get_cookie(settings.SESSION_COOKIE_NAME)
     minutes = int(minutes)
 
-    expiry_time = cookie['expiry'] - int(time.time())
+    expiry_time = cookie['expiry'] - int(time())
 
     assert_equals(math.ceil(expiry_time / 60), minutes)
 
