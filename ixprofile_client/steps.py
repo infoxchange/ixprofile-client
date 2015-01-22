@@ -338,20 +338,39 @@ def login_and_visit(self, email, page):
 @step(r'I left my computer for (\d+) minutes?')
 def age_cookie(_, minutes):
     """
-    Age the cookie
+    Age the cookie.
+
+    This will not age the user's session in the database, because although
+    there is an API for setting a session timeout, it means "expire X
+    minutes after last request", thus subsequent browser requests will result
+    in the cookie life decreased rather than renewing the session expiry time.
+
+    For example, if a session expiry time is set down to 60 minutes from 120,
+    the next request will not bump it back to 120 but instead set the cookie
+    life to 60 minutes as well.
     """
 
-    cookie = world.browser.get_cookie(settings.SESSION_COOKIE_NAME)
     minutes = int(minutes)
 
-    expiry = int(time.time()) + settings.SESSION_COOKIE_AGE - minutes * 60
+    cookie = world.browser.get_cookie(settings.SESSION_COOKIE_NAME)
+    if not cookie:
+        # Already expired
+        return
 
-    world.browser.add_cookie({
-        'name': cookie['name'],
-        'value': cookie['value'],
-        'path': '/',
-        'expiry': expiry,
-    })
+    expiry = cookie['expiry'] - minutes * 60
+    now = int(time.time())
+
+    # PhantomJS still sends a cookie if it is added with expiry date in the
+    # past. Explicitly delete it in that case.
+    if expiry > now:
+        world.browser.add_cookie({
+            'name': cookie['name'],
+            'value': cookie['value'],
+            'path': '/',
+            'expiry': expiry,
+        })
+    else:
+        world.browser.delete_cookie(settings.SESSION_COOKIE_NAME)
 
 
 @step(r'my cookie expires in (\d+) minutes?')
