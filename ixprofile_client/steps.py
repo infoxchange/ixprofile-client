@@ -338,7 +338,16 @@ def login_and_visit(self, email, page):
 @step(r'I left my computer for (\d+) minutes?')
 def age_cookie(_, minutes):
     """
-    Age the cookie
+    Age the cookie.
+
+    This will not age the user's session in the database, because although
+    there is an API for setting a session timeout, it means "expire X
+    minutes after last request", thus subsequent browser requests will result
+    in the cookie life decreased rather than renewing the session expiry time.
+
+    For example, if a session expiry time is set down to 60 minutes from 120,
+    the next request will not bump it back to 120 but instead set the cookie
+    life to 60 minutes as well.
     """
 
     minutes = int(minutes)
