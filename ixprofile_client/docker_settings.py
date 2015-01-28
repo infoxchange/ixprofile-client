@@ -19,3 +19,9 @@ if 'PROFILE_SERVER_URL' in os.environ:
 
     _profile_server_url.remove(username=True, password=True)
     PROFILE_SERVER = _profile_server_url.url
+
+
+# Make OpenID module trust the proper certificates
+from openid.fetchers import setDefaultFetcher
+from ixprofile_client.fetchers import SettingsAwareFetcher
+setDefaultFetcher(SettingsAwareFetcher())
