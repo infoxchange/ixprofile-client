@@ -72,6 +72,7 @@ class TestWebservice(RealProfileServerTestCase):
         assert_equals(self.test_email, details['email'])
         assert_in('phone', details)
         assert_in('mobile', details)
+        assert_in('last_login', details)
         assert_in('subscribed', details)
         assert_in('subscriptions', details)
         assert_in('state', details)
