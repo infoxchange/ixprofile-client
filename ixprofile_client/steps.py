@@ -25,6 +25,7 @@ from django.conf import settings
 from django.contrib.auth import get_backends, login
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
+from django.utils.timezone import now
 
 from selenium.webdriver.support.ui import WebDriverWait
 
@@ -262,6 +263,7 @@ class AuthHandler(object):
             klass=backend.__class__.__name__)
 
         self.user = user
+        user.last_login = now()
 
         assert self.use_auth != self.fake_auth
         self.use_auth = self.fake_auth
@@ -322,6 +324,8 @@ def create_login_cookie(self, email, minutes):
 
     auth_handler.login_as_user(user)
 
+    webservice.profile_server.set_details(user, last_login=user.last_login)
+
     self.given('I visit site page ""')
     self.given('I left my computer for {0} minutes'.format(minutes))
 
@@ -358,11 +362,11 @@ def age_cookie(_, minutes):
         return
 
     expiry = cookie['expiry'] - minutes * 60
-    now = int(time())
+    unix_now = int(time())
 
     # PhantomJS still sends a cookie if it is added with expiry date in the
     # past. Explicitly delete it in that case.
-    if expiry > now:
+    if expiry > unix_now:
         world.browser.add_cookie({
             'name': cookie['name'],
             'value': cookie['value'],
@@ -416,6 +420,7 @@ class MockProfileServer(webservice.UserWebService):
             'phone': (False, ''),
             'mobile': (False, ''),
             'state': (False, ''),
+            'last_login': (True, None),
             'groups': (False, []),
             'subscribed': (False, False),
             'subscriptions': (False, {
