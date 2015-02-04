@@ -64,12 +64,18 @@ class RemoveGroupsTestCase(FakeProfileServerTestCase):
         Test listing the users subscribed to the application.
         """
 
-        users = sorted(map(
-            leave_only_keys('email', 'subscribed', 'subscriptions'),
-            self.mock_ps.list()
-        ), key=itemgetter('email'))
+        filter_interesting = \
+            leave_only_keys('email', 'subscribed', 'subscriptions')
 
-        self.assertEqual(users, [
+        users = self.mock_ps.list()
+
+        self.assertEqual(users['meta']['total_count'], 3)
+
+        user_list = sorted(
+            map(filter_interesting, users['objects']),
+            key=itemgetter('email'))
+
+        self.assertEqual(user_list, [
             {
                 'email': 'bob@gov.gl',
                 'subscribed': True,

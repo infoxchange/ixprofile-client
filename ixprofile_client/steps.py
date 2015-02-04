@@ -465,14 +465,27 @@ class MockProfileServer(webservice.UserWebService):
         """
         List all the users subscribed to the application (or ones adminable
         by it).
+
+        Doesn't support any pagination parameters.
         """
 
-        return [
+        user_list = [
             self._normalize(user)
             for user in self.users.values()
             if any(user['subscriptions'].get(app, False)
                    for app in self._visible_apps())
         ]
+
+        return {
+            'meta': {
+                'limit': 0,
+                'next': None,
+                'offset': 0,
+                'previous': None,
+                'total_count': len(user_list),
+            },
+            'objects': user_list,
+        }
 
     def register(self, user):
         """
