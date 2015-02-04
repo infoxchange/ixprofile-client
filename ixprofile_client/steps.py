@@ -439,7 +439,7 @@ class MockProfileServer(webservice.UserWebService):
         if email in self.not_unique_emails:
             raise EmailNotUnique(email)
 
-        return self._normalize(self.users.get(email, None))
+        return self._user_details(self.users.get(email, None))
 
     def _visible_apps(self):
         """
@@ -448,9 +448,9 @@ class MockProfileServer(webservice.UserWebService):
 
         return (self.app,) + tuple(self.adminable_apps)
 
-    def _normalize(self, user):
+    def _user_details(self, user):
         """
-        Normalise the user's subscription data.
+        Return the user details in the same format as the real API.
         """
 
         user = user.copy()
@@ -470,7 +470,7 @@ class MockProfileServer(webservice.UserWebService):
         """
 
         user_list = [
-            self._normalize(user)
+            self._user_details(user)
             for user in self.users.values()
             if any(user['subscriptions'].get(app, False)
                    for app in self._visible_apps())
@@ -494,8 +494,8 @@ class MockProfileServer(webservice.UserWebService):
         details = self._user_to_dict(user)
         email = details['email']
 
-        # Remove 'subscribed' for consistency, it will be added back
-        # by _normalize
+        # Remove 'subscribed', all the necessary information is in
+        # 'subscriptions'
         details['subscriptions'][self.app] = details.pop('subscribed')
         self.users[email] = details
 
