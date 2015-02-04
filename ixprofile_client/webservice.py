@@ -143,6 +143,18 @@ class UserWebService(object):
             self._raise_for_failure(response)
             return response.json()
 
+    def list(self):
+        """
+        List all the users subscribed to the application (or ones adminable
+        by it).
+
+        Does not support pagination.
+        """
+
+        response = self._request('GET', self._list_uri())
+        self._raise_for_failure(response)
+        return response.json()
+
     def register(self, user):
         """
         Register a new user on the profile server

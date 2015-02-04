@@ -65,19 +65,27 @@ class TestWebservice(RealProfileServerTestCase):
         """
         details = self.profile_server.details(self.test_email)
 
-        assert_in('username', details)
-        assert_in('first_name', details)
-        assert_in('last_name', details)
-        assert_in('email', details)
         assert_equals(self.test_email, details['email'])
-        assert_in('phone', details)
-        assert_in('mobile', details)
-        assert_in('last_login', details)
-        assert_in('subscribed', details)
-        assert_in('subscriptions', details)
-        assert_in('state', details)
-        assert_in('groups', details)
-        assert_in('resource_uri', details)
+        self.assert_looks_like_a_user(details)
+
+    def assert_looks_like_a_user(self, obj):
+        """
+        Check that the dictionary looks like a user returned by the profile
+        server.
+        """
+
+        assert_in('username', obj)
+        assert_in('first_name', obj)
+        assert_in('last_name', obj)
+        assert_in('email', obj)
+        assert_in('phone', obj)
+        assert_in('mobile', obj)
+        assert_in('last_login', obj)
+        assert_in('subscribed', obj)
+        assert_in('subscriptions', obj)
+        assert_in('state', obj)
+        assert_in('groups', obj)
+        assert_in('resource_uri', obj)
 
     def test_get_user_preferences(self):
         """
@@ -93,3 +101,15 @@ class TestWebservice(RealProfileServerTestCase):
                                                              key=self.APP)
 
         assert_equals(total, len(user_preferences))
+
+    def test_list_users(self):
+        """
+        Test listing users.
+        """
+
+        users = self.profile_server.list()
+
+        self.assertGreater(users['meta']['total_count'], 0)
+
+        for obj in users['objects']:
+            self.assert_looks_like_a_user(obj)
