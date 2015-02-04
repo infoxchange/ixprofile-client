@@ -494,6 +494,8 @@ class MockProfileServer(webservice.UserWebService):
         details = self._user_to_dict(user)
         email = details['email']
 
+        # Remove 'subscribed' for consistency, it will be added back
+        # by _normalize
         details['subscriptions'][self.app] = details.pop('subscribed')
         self.users[email] = details
 
