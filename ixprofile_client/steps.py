@@ -37,6 +37,7 @@ from social.exceptions import AuthException
 
 from ixprofile_client import webservice
 from ixprofile_client.exceptions import EmailNotUnique
+from ixprofile_client.util import leave_only_keys
 
 # The real profile server, used for integration tests
 RealProfileServer = webservice.profile_server  # pylint:disable=invalid-name
@@ -393,6 +394,7 @@ class MockProfileServer(webservice.UserWebService):
     """
 
     app = 'mock_app'
+    adminable_apps = ()
     not_unique_emails = []
 
     # pylint:disable=super-init-not-called
@@ -438,7 +440,40 @@ class MockProfileServer(webservice.UserWebService):
         if email in self.not_unique_emails:
             raise EmailNotUnique(email)
 
-        return self.users.get(email, None)
+        return self._normalize(self.users.get(email, None))
+
+    def _visible_apps(self):
+        """
+        All the applications visible by this key.
+        """
+
+        return (self.app,) + tuple(self.adminable_apps)
+
+    def _normalize(self, user):
+        """
+        Normalise the user's subscription data.
+        """
+
+        user = user.copy()
+        user['subscriptions'] = {
+            app: user['subscriptions'].get(app, False)
+            for app in self._visible_apps()
+        }
+        user['subscribed'] = user['subscriptions'][self.app]
+        return user
+
+    def list(self):
+        """
+        List all the users subscribed to the application (or ones adminable
+        by it).
+        """
+
+        return [
+            self._normalize(user)
+            for user in self.users.values()
+            if any(user['subscriptions'].get(app, False)
+                   for app in self._visible_apps())
+        ]
 
     def register(self, user):
         """
@@ -447,7 +482,7 @@ class MockProfileServer(webservice.UserWebService):
         details = self._user_to_dict(user)
         email = details['email']
 
-        details['subscriptions'][self.app] = details['subscribed']
+        details['subscriptions'][self.app] = details.pop('subscribed')
         self.users[email] = details
 
         return details
