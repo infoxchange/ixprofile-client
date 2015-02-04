@@ -398,6 +398,7 @@ class MockProfileServer(webservice.UserWebService):
     """
 
     app = 'mock_app'
+    adminable_apps = ()
     not_unique_emails = []
 
     # pylint:disable=super-init-not-called
@@ -444,7 +445,53 @@ class MockProfileServer(webservice.UserWebService):
         if email in self.not_unique_emails:
             raise EmailNotUnique(email)
 
-        return self.users.get(email, None)
+        return self._user_details(self.users.get(email, None))
+
+    def _visible_apps(self):
+        """
+        All the applications visible by this key.
+        """
+
+        return (self.app,) + tuple(self.adminable_apps)
+
+    def _user_details(self, user):
+        """
+        Return the user details in the same format as the real API.
+        """
+
+        user = user.copy()
+        user['subscriptions'] = {
+            app: user['subscriptions'].get(app, False)
+            for app in self._visible_apps()
+        }
+        user['subscribed'] = user['subscriptions'][self.app]
+        return user
+
+    def list(self):
+        """
+        List all the users subscribed to the application (or ones adminable
+        by it).
+
+        Doesn't support any pagination parameters.
+        """
+
+        user_list = [
+            self._user_details(user)
+            for user in self.users.values()
+            if any(user['subscriptions'].get(app, False)
+                   for app in self._visible_apps())
+        ]
+
+        return {
+            'meta': {
+                'limit': 0,
+                'next': None,
+                'offset': 0,
+                'previous': None,
+                'total_count': len(user_list),
+            },
+            'objects': user_list,
+        }
 
     def register(self, user):
         """
@@ -453,7 +500,9 @@ class MockProfileServer(webservice.UserWebService):
         details = self._user_to_dict(user)
         email = details['email']
 
-        details['subscriptions'][self.app] = details['subscribed']
+        # Remove 'subscribed', all the necessary information is in
+        # 'subscriptions'
+        details['subscriptions'][self.app] = details.pop('subscribed')
         self.users[email] = details
 
         return details
