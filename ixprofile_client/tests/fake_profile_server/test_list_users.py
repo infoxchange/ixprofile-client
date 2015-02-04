@@ -6,9 +6,6 @@ from __future__ import absolute_import
 
 from operator import itemgetter
 
-# pylint:disable=no-name-in-module
-from nose.tools import assert_not_in
-
 from ...util import leave_only_keys
 from . import FakeProfileServerTestCase
 

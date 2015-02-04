@@ -37,7 +37,6 @@ from social.exceptions import AuthException
 
 from ixprofile_client import webservice
 from ixprofile_client.exceptions import EmailNotUnique
-from ixprofile_client.util import leave_only_keys
 
 # The real profile server, used for integration tests
 RealProfileServer = webservice.profile_server  # pylint:disable=invalid-name
