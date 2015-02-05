@@ -75,6 +75,15 @@ def visit_page(lettuce_step, page):
     _visit_url_wrapper(lettuce_step, site_url(page))
 
 
+@step('The app is named "([^"]+)" in the fake profile server')
+def set_app_name(self, app_name):
+    """
+    Set the application name on the fake profile server.
+    """
+
+    webservice.profile_server.app = app_name
+
+
 @step('The app administers the following apps? in the fake profile server:')
 def set_adminable_apps(self):
     """
