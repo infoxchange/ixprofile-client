@@ -469,6 +469,9 @@ class MockProfileServer(webservice.UserWebService):
         Return the user details in the same format as the real API.
         """
 
+        if user is None:
+            return None
+
         user = user.copy()
         user['subscriptions'] = {
             app: user['subscriptions'].get(app, False)
