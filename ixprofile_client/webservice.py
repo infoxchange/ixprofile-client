@@ -5,6 +5,7 @@ Web service to interact with the profile server user records
 import json
 from logging import getLogger
 from urlparse import parse_qs, urljoin, urlparse
+from urllib import urlencode
 
 import requests
 from requests.auth import AuthBase
@@ -60,11 +61,16 @@ class UserWebService(object):
 
     register_email_template = None
 
-    def _list_uri(self):
+    def _list_uri(self, **kwargs):
         """
         The URL for the user list.
         """
-        return urljoin(self.profile_server, self.USER_LIST_URI)
+        if kwargs:
+            query_string = '?' + urlencode(kwargs)
+        else:
+            query_string = ''
+
+        return urljoin(self.profile_server, self.USER_LIST_URI) + query_string
 
     def _detail_uri(self, email):
         """
@@ -143,15 +149,13 @@ class UserWebService(object):
             self._raise_for_failure(response)
             return response.json()
 
-    def list(self):
+    def list(self, **kwargs):
         """
         List all the users subscribed to the application (or ones adminable
         by it).
-
-        Does not support pagination.
         """
 
-        response = self._request('GET', self._list_uri())
+        response = self._request('GET', self._list_uri(**kwargs))
         self._raise_for_failure(response)
         return response.json()
 

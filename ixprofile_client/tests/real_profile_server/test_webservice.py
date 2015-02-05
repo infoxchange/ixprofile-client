@@ -113,3 +113,13 @@ class TestWebservice(RealProfileServerTestCase):
 
         for obj in users['objects']:
             self.assert_looks_like_a_user(obj)
+
+    def test_list_users_params(self):
+        """
+        Test listing users with params
+        """
+        # pylint:disable=protected-access
+        self.assertEquals(
+            self.profile_server._list_uri(a='a', b='b'),
+            self.profile_server.profile_server + '/api/v1/user/?a=a&b=b'
+        )
