@@ -75,6 +75,16 @@ def visit_page(lettuce_step, page):
     _visit_url_wrapper(lettuce_step, site_url(page))
 
 
+@step('The app administers the following apps? in the fake profile server:')
+def set_adminable_apps(self):
+    """
+    Set adminable_apps on the fake profile server.
+    """
+
+    webservice.profile_server.adminable_apps = \
+        sum((tuple(row) for row in self.table), ())
+
+
 @step('I have users in the fake profile server')
 def add_profile_server_users(self):
     """
