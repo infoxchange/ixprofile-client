@@ -75,11 +75,24 @@ def visit_page(lettuce_step, page):
     _visit_url_wrapper(lettuce_step, site_url(page))
 
 
+@step('The app is named "([^"]+)" in the fake profile server')
+def set_app_name(self, app_name):
+    """
+    Set the application name on the fake profile server.
+    """
+
+    assert isinstance(webservice.profile_server, MockProfileServer)
+
+    webservice.profile_server.app = app_name
+
+
 @step('The app administers the following apps? in the fake profile server:')
 def set_adminable_apps(self):
     """
     Set adminable_apps on the fake profile server.
     """
+
+    assert isinstance(webservice.profile_server, MockProfileServer)
 
     webservice.profile_server.adminable_apps = \
         sum((tuple(row) for row in self.table), ())
@@ -407,12 +420,17 @@ class MockProfileServer(webservice.UserWebService):
     A mock profile server
     """
 
-    app = 'mock_app'
     adminable_apps = ()
     not_unique_emails = []
 
     # pylint:disable=super-init-not-called
     def __init__(self):
+        # Try to get the application name from the settings
+        try:
+            self.app = settings.PROFILE_SERVER_KEY
+        except AttributeError:
+            self.app = 'mock_app'
+
         self.users = {}
         self.user_data = {}
         self.groups = {}
