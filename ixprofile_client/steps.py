@@ -81,6 +81,8 @@ def set_app_name(self, app_name):
     Set the application name on the fake profile server.
     """
 
+    assert isinstance(webservice.profile_server, MockProfileServer)
+
     webservice.profile_server.app = app_name
 
 
@@ -89,6 +91,8 @@ def set_adminable_apps(self):
     """
     Set adminable_apps on the fake profile server.
     """
+
+    assert isinstance(webservice.profile_server, MockProfileServer)
 
     webservice.profile_server.adminable_apps = \
         sum((tuple(row) for row in self.table), ())
