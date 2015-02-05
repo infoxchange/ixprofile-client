@@ -75,6 +75,16 @@ def visit_page(lettuce_step, page):
     _visit_url_wrapper(lettuce_step, site_url(page))
 
 
+@step('The app administers the following apps? in the fake profile server:')
+def set_adminable_apps(self):
+    """
+    Set adminable_apps on the fake profile server.
+    """
+
+    webservice.profile_server.adminable_apps = \
+        sum((tuple(row) for row in self.table), ())
+
+
 @step('I have users in the fake profile server')
 def add_profile_server_users(self):
     """
@@ -459,6 +469,9 @@ class MockProfileServer(webservice.UserWebService):
         Return the user details in the same format as the real API.
         """
 
+        if user is None:
+            return None
+
         user = user.copy()
         user['subscriptions'] = {
             app: user['subscriptions'].get(app, False)
@@ -514,8 +527,7 @@ class MockProfileServer(webservice.UserWebService):
 
         email = self._user_to_dict(user)['email']
 
-        self.users[email]['subscribed'] = \
-            self.users[email]['subscriptions'][self.app] = state
+        self.users[email]['subscriptions'][self.app] = state
 
     def unsubscribe(self, user):
         """
@@ -590,8 +602,16 @@ class MockProfileServer(webservice.UserWebService):
 
         email = self._user_to_dict(user)['email']
 
-        if not set(kwargs.keys()).issubset(set(self.users[email].keys())):
-            raise Exception("Bad request: %s" % kwargs)
+        # 'subscribed' overrides 'subscriptions'
+        try:
+            subscribed = kwargs.pop('subscribed')
+            kwargs.setdefault('subscriptions', {})[self.app] = subscribed
+        except KeyError:
+            pass
+
+        for key in kwargs:
+            if key not in self.users[email]:
+                raise ValueError("Invalid user key: {0}".format(key))
 
         try:
             self.users[email]['subscriptions'].update(
