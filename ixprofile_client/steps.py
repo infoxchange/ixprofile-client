@@ -524,8 +524,7 @@ class MockProfileServer(webservice.UserWebService):
 
         email = self._user_to_dict(user)['email']
 
-        self.users[email]['subscribed'] = \
-            self.users[email]['subscriptions'][self.app] = state
+        self.users[email]['subscriptions'][self.app] = state
 
     def unsubscribe(self, user):
         """
@@ -600,8 +599,16 @@ class MockProfileServer(webservice.UserWebService):
 
         email = self._user_to_dict(user)['email']
 
-        if not set(kwargs.keys()).issubset(set(self.users[email].keys())):
-            raise Exception("Bad request: %s" % kwargs)
+        # 'subscribed' overrides 'subscriptions'
+        try:
+            subscribed = kwargs.pop('subscribed')
+            kwargs.setdefault('subscriptions', {})[self.app] = subscribed
+        except KeyError:
+            pass
+
+        for key in kwargs:
+            if key not in self.users[email]:
+                raise ValueError("Invalid user key: {0}".format(key))
 
         try:
             self.users[email]['subscriptions'].update(
