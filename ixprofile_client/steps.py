@@ -420,12 +420,17 @@ class MockProfileServer(webservice.UserWebService):
     A mock profile server
     """
 
-    app = 'mock_app'
     adminable_apps = ()
     not_unique_emails = []
 
     # pylint:disable=super-init-not-called
     def __init__(self):
+        # Try to get the application name from the settings
+        try:
+            self.app = settings.PROFILE_SERVER_KEY
+        except AttributeError:
+            self.app = 'mock_app'
+
         self.users = {}
         self.user_data = {}
         self.groups = {}
