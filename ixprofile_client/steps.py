@@ -515,7 +515,7 @@ class MockProfileServer(webservice.UserWebService):
 
         return {
             'meta': {
-                'limit': 0,
+                'limit': 20,
                 'next': None,
                 'offset': 0,
                 'previous': None,
