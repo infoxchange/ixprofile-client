@@ -26,15 +26,14 @@ from django.contrib.auth import get_backends, login
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.timezone import now
-
-from selenium.webdriver.support.ui import WebDriverWait
-
 from lettuce import before, step, world
 from lettuce.django import server
 from lettuce.django.steps.models import hashes_data
 # pylint:disable=no-name-in-module
 from nose.tools import assert_equals, assert_in, assert_not_in
+from selenium.webdriver.support.ui import WebDriverWait
 from social.exceptions import AuthException
+import social.apps.django_app.views
 
 from ixprofile_client import webservice
 from ixprofile_client.exceptions import EmailNotUnique
@@ -253,8 +252,6 @@ def login_framed_profile_server(_, username, password):
 
     driver.switch_to_default_content()
 
-
-import social.apps.django_app.views
 
 real_auth = social.apps.django_app.views.auth  # pylint:disable=invalid-name
 
@@ -515,7 +512,7 @@ class MockProfileServer(webservice.UserWebService):
 
         return {
             'meta': {
-                'limit': 0,
+                'limit': 20,
                 'next': None,
                 'offset': 0,
                 'previous': None,

@@ -5,6 +5,9 @@ Standard config for loading profiles server settings from Docker
 import os
 
 from furl import furl
+from openid.fetchers import setDefaultFetcher
+
+from ixprofile_client.fetchers import SettingsAwareFetcher
 
 PROFILE_SERVER = None
 PROFILE_SERVER_KEY = None
@@ -22,6 +25,4 @@ if 'PROFILE_SERVER_URL' in os.environ:
 
 
 # Make OpenID module trust the proper certificates
-from openid.fetchers import setDefaultFetcher
-from ixprofile_client.fetchers import SettingsAwareFetcher
 setDefaultFetcher(SettingsAwareFetcher())
