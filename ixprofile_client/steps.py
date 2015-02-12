@@ -547,11 +547,23 @@ class MockProfileServer(webservice.UserWebService):
 
     def list(self, **kwargs):
         """
-        List all the users subscribed to the application (or ones adminable
-        by it).
+        List all the users subscribed to the application.
 
-        Doesn't support any pagination parameters.
+        W A R N I N G ! ! !
+
+        This method probably doesn't do what you expect!
+
+        This mock does not emulate the effects of profile server parameters.
+        Therefore pagination, sorting, searching and filtering are not mocked via this method.
+
+        In order to test calls to this method, we verify that it was invoked with the
+        expected kwargs (stored in MockProfileServer's last_list_kwargs); see
+        verify_last_list_call() below.
+
+        Profile Server's /user endpoint paramaters are covered by tests in Profile Server.
         """
+
+        self.last_list_kwargs = kwargs
 
         user_list = [
             self._user_details(user)
@@ -758,3 +770,19 @@ def initialise_profile_server(scenario, *args):
     # Replace profile server on ixprofile_client admin form
     from ixprofile_client import forms as ixprofile_forms
     ixprofile_forms.profile_server = new_reference
+
+
+@step(r'I have last invoked the profile server list with the following kwargs?:')
+def verify_last_list_call(self):
+    """
+    Verify that list() was invoked with the expected kwargs.
+
+    This is used instead of mocking various Profile Server features,
+    including pagination, search, filtering and sorting. See docstring of
+    list() above.
+    """
+    assert isinstance(webservice.profile_server, MockProfileServer)
+
+    expected_kwargs = dict((key, value) for (key, value) in self.table)
+
+    assert_equals(expected_kwargs, webservice.profile_server.last_list_kwargs)
