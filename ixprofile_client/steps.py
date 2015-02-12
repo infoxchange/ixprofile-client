@@ -554,13 +554,15 @@ class MockProfileServer(webservice.UserWebService):
         This method probably doesn't do what you expect!
 
         This mock does not emulate the effects of profile server parameters.
-        Therefore pagination, sorting, searching and filtering are not mocked via this method.
+        Therefore pagination, sorting, searching and filtering are not
+        mocked via this method.
 
-        In order to test calls to this method, we verify that it was invoked with the
-        expected kwargs (stored in MockProfileServer's last_list_kwargs); see
-        verify_last_list_call() below.
+        In order to test calls to this method, we verify that it was invoked
+        with the expected kwargs (stored in MockProfileServer's
+        last_list_kwargs); see verify_last_list_call() below.
 
-        Profile Server's /user endpoint paramaters are covered by tests in Profile Server.
+        Profile Server's /user endpoint paramaters are covered by
+        tests in Profile Server.
         """
 
         self.last_list_kwargs = kwargs
@@ -772,7 +774,8 @@ def initialise_profile_server(scenario, *args):
     ixprofile_forms.profile_server = new_reference
 
 
-@step(r'I have last invoked the profile server list with the following kwargs?:')
+@step(r'I have last invoked the profile server list '
+      'with the following kwargs?:')
 def verify_last_list_call(self):
     """
     Verify that list() was invoked with the expected kwargs.
