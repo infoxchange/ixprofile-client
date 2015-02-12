@@ -562,9 +562,9 @@ class MockProfileServer(webservice.UserWebService):
 
         return {
             'meta': {
-                'limit': 20,
+                'limit': kwargs.get('limit', 20),
                 'next': None,
-                'offset': 0,
+                'offset': kwargs.get('offset', 0),
                 'previous': None,
                 'total_count': len(user_list),
             },
