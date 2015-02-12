@@ -515,6 +515,8 @@ class MockProfileServer(webservice.UserWebService):
             for email, user in self.users.items()
             if email != exclude_email
         ):
+            # Imitate the ValidationError dict returned by the real profile
+            # server.
             self._raise_failure({
                 'user': {
                     'username': [
