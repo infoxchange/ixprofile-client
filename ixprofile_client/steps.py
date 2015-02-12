@@ -468,7 +468,7 @@ class MockProfileServer(webservice.UserWebService):
         Raises EmailNotUnique if add_nonunique_email() was run with the email
         """
         if email in self.not_unique_emails:
-            raise EmailNotUnique(requests.Response(), email)
+            raise EmailNotUnique(self._dummy_response(), email)
 
         return self._user_details(self.users.get(email, None))
 
@@ -523,17 +523,25 @@ class MockProfileServer(webservice.UserWebService):
                 },
             })
 
+    def _dummy_response(self, content=''):
+        """
+        Make a dummy requests.Response with the specifying content.
+        """
+
+        response = requests.Response()
+        # pylint:disable=protected-access
+        response._content = content
+        response.status_code = 400
+
+        return response
+
     def _raise_failure(self, error_json):
         """
         Raise a ProfileServerFailure exception with the supplied error message.
         """
 
-        response = requests.Response()
-        # pylint:disable=protected-access
-        response._content = json.dumps(error_json)
-        response.status_code = 400
-
-        raise ProfileServerFailure(response)
+        raise ProfileServerFailure(
+            self._dummy_response(json.dumps(error_json)))
 
     def list(self, **kwargs):
         """
