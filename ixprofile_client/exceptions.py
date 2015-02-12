@@ -7,15 +7,35 @@ class ProfileServerException(Exception):
     """
     Base exception for all profile server errors
     """
-    pass
+
+    def __init__(self, response):
+        super(ProfileServerFailure, self).__init__()
+        self.response = response
+        try:
+            self.json = self.response.json()
+        except ValueError:
+            pass
+
+    def __str__(self):
+        """
+        String representation of the exception
+        """
+        return self.__unicode__()
+
+    def __unicode__(self):
+        """
+        Unicode representation of the exception
+        """
+        return "Profile server failure: %d %s." % (
+            self.response.status_code, self.response.reason)
 
 
 class EmailNotUnique(ProfileServerException):
     """
     An email used in an interaction with the profile server is not unique
     """
-    def __init__(self, email):
-        super(EmailNotUnique, self).__init__()
+    def __init__(self, response, email):
+        super(EmailNotUnique, self).__init__(response)
         self.email = email
 
     def __str__(self):
@@ -40,23 +60,4 @@ class EmailNotUnique(ProfileServerException):
         return "EmailNotUnique('%s')" % self.email
 
 
-class ProfileServerFailure(ProfileServerException):
-    """
-    A generic failure on the part of the profile server.
-    """
-    def __init__(self, response):
-        super(ProfileServerFailure, self).__init__()
-        self.response = response
-
-    def __str__(self):
-        """
-        String representation of the exception
-        """
-        return self.__unicode__()
-
-    def __unicode__(self):
-        """
-        Unicode representation of the exception
-        """
-        return "Profile server failure: %d %s." % (
-            self.response.status_code, self.response.reason)
+ProfileServerFailure = ProfileServerException
