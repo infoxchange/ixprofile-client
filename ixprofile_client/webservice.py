@@ -151,8 +151,10 @@ class UserWebService(object):
 
     def list(self, **kwargs):
         """
-        List all the users subscribed to the application (or ones adminable
-        by it).
+        List all the users subscribed to the application.
+
+        Kwargs are turned into a query string and
+        sent to profile server's /user/ endpoint.
         """
 
         response = self._request('GET', self._list_uri(**kwargs))
