@@ -495,7 +495,7 @@ class MockProfileServer(webservice.UserWebService):
         user['subscribed'] = user['subscriptions'][self.app]
         return user
 
-    def list(self):
+    def list(self, **kwargs):
         """
         List all the users subscribed to the application (or ones adminable
         by it).
