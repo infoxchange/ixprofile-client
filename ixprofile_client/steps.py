@@ -36,7 +36,7 @@ from social.exceptions import AuthException
 import social.apps.django_app.views
 
 from ixprofile_client import webservice
-from ixprofile_client.exceptions import EmailNotUnique
+from ixprofile_client.exceptions import EmailNotUnique, ProfileServerFailure
 
 # The real profile server, used for integration tests
 RealProfileServer = webservice.profile_server  # pylint:disable=invalid-name
@@ -468,7 +468,7 @@ class MockProfileServer(webservice.UserWebService):
         Raises EmailNotUnique if add_nonunique_email() was run with the email
         """
         if email in self.not_unique_emails:
-            raise EmailNotUnique(email)
+            raise EmailNotUnique(self._dummy_response(), email)
 
         return self._user_details(self.users.get(email, None))
 
@@ -494,6 +494,56 @@ class MockProfileServer(webservice.UserWebService):
         }
         user['subscribed'] = user['subscriptions'][self.app]
         return user
+
+    def _check_username(self, user):
+        """
+        Raise an error if the username of a given user record is already taken
+        by another user.
+        """
+
+        user = self._user_to_dict(user)
+
+        if not user.get('username'):
+            # Don't check empty usernames
+            return
+
+        username = user['username']
+        exclude_email = user['email']
+
+        if any(
+            user['username'] == username
+            for email, user in self.users.items()
+            if email != exclude_email
+        ):
+            # Imitate the ValidationError dict returned by the real profile
+            # server.
+            self._raise_failure({
+                'user': {
+                    'username': [
+                        "This username is already taken.",
+                    ],
+                },
+            })
+
+    def _dummy_response(self, content=''):
+        """
+        Make a dummy requests.Response with the specifying content.
+        """
+
+        response = requests.Response()
+        # pylint:disable=protected-access
+        response._content = content
+        response.status_code = 400
+
+        return response
+
+    def _raise_failure(self, error_json):
+        """
+        Raise a ProfileServerFailure exception with the supplied error message.
+        """
+
+        raise ProfileServerFailure(
+            self._dummy_response(json.dumps(error_json)))
 
     def list(self, **kwargs):
         """
@@ -527,6 +577,8 @@ class MockProfileServer(webservice.UserWebService):
         """
         details = self._user_to_dict(user)
         email = details['email']
+
+        self._check_username(user)
 
         # Remove 'subscribed', all the necessary information is in
         # 'subscriptions'
@@ -626,13 +678,15 @@ class MockProfileServer(webservice.UserWebService):
 
         for key in kwargs:
             if key not in self.users[email]:
-                raise ValueError("Invalid user key: {0}".format(key))
+                self._raise_failure("Invalid user key: {0}".format(key))
 
         try:
             self.users[email]['subscriptions'].update(
                 kwargs.pop('subscriptions'))
         except KeyError:
             pass
+
+        self._check_username(user)
 
         self.users[email].update(kwargs)
 

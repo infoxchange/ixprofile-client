@@ -144,7 +144,7 @@ class UserWebService(object):
         if response.status_code == requests.codes.not_found:
             return None
         elif response.status_code == requests.codes.multiple_choices:
-            raise exceptions.EmailNotUnique(email)
+            raise exceptions.EmailNotUnique(response, email)
         else:
             self._raise_for_failure(response)
             return response.json()
