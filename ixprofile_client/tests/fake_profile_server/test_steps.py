@@ -36,6 +36,7 @@ class TestLettuceSteps(object):
         'phone': '',
         'state': '',
         'last_login': None,
+        'is_locked': False,
         'subscribed': False,
         'subscriptions': {'mock_app': False},
         'username': '',
