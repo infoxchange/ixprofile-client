@@ -448,6 +448,7 @@ class MockProfileServer(webservice.UserWebService):
             'mobile': (False, ''),
             'state': (False, ''),
             'last_login': (True, None),
+            'is_locked': (False, False),
             'groups': (False, []),
             'subscribed': (False, False),
             'subscriptions': (False, {
