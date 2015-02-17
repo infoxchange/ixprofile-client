@@ -199,6 +199,17 @@ class UserWebService(object):
             user.save()
         return user
 
+    def reset_password(self, user):
+        """
+        Send the user a password reset email.
+        """
+
+        response = self._request(
+            'POST',
+            urljoin(self._detail_uri(user.email), 'reset-password'),
+        )
+        self._raise_for_failure(response)
+
     def get_group(self, group):
         """
         Request the users in a profile server group
@@ -254,9 +265,11 @@ class UserWebService(object):
         """
         Remove a user from multiple groups
         """
+
+        current_groups = set(self.details(user.email)['groups'])
+
         data = {
-            'groups': list(set(self.details(user.email)['groups'])
-                           - set(groups)),
+            'groups': list(current_groups - set(groups)),
         }
 
         response = self._request('PATCH',
