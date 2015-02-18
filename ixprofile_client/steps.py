@@ -37,7 +37,7 @@ from social.exceptions import AuthException
 import social.apps.django_app.views
 
 from ixprofile_client import webservice
-from ixprofile_client.exceptions import ProfileServerFailure
+from ixprofile_client.exceptions import EmailNotUnique, ProfileServerFailure
 
 # The real profile server, used for integration tests
 RealProfileServer = webservice.profile_server  # pylint:disable=invalid-name
@@ -126,7 +126,7 @@ def add_profile_server_users(self):
 @step('I have multiple users in the fake profile server with email "([^"]*)"')
 def add_nonunique_email(_, email):
     """
-    Subsequent to this, details(email) will throw EmailNotUnique
+    Subsequent to this, find_by_email(email) will throw EmailNotUnique
     """
     webservice.profile_server.not_unique_emails.append(email)
 
@@ -433,8 +433,8 @@ class MockProfileServer(webservice.UserWebService):
         self.user_data = {}
         self.groups = {}
 
-    @staticmethod
-    def _user_to_dict(user):
+    @classmethod
+    def _user_to_dict(cls, user):
         """
         If user is a Django User, convert it to a dict
         """
@@ -462,7 +462,21 @@ class MockProfileServer(webservice.UserWebService):
             elif obj_type != User:
                 details[key] = user.get(key, default)
 
+        if not details['username']:
+            details['username'] = cls._generate_username(details)
+
         return details
+
+    def find_by_email(self, email):
+        """
+        Find a user's details by email.
+        Raise an error on duplicate emails.
+        """
+
+        if email in self.not_unique_emails:
+            raise EmailNotUnique(None, email)
+
+        return super(MockProfileServer, self).find_by_email(email)
 
     def find_by_username(self, username):
         """
@@ -541,24 +555,28 @@ class MockProfileServer(webservice.UserWebService):
         raise ProfileServerFailure(
             self._dummy_response(json.dumps(error_json)))
 
-    def list(self, **kwargs):
+    def list(self, **kwargs):  # pylint:disable=too-complex
         """
         List all the users subscribed to the application.
         """
 
-        self.last_list_kwargs = kwargs
+        self.last_list_kwargs = kwargs.copy()
 
         user_list = [
             self._user_details(user)
             for user in self.users.values()
         ]
 
-        # Support searching unsubscribed users by email
+        # Filter only subscribed/adminable users, unless searching by email
         if 'email' not in kwargs:
+            if kwargs.pop('include_adminable', False):
+                interesting_apps = self._visible_apps()
+            else:
+                interesting_apps = (self.app,)
             user_list = [
                 user for user in user_list
                 if any(user['subscriptions'].get(app, False)
-                       for app in self._visible_apps())
+                       for app in interesting_apps)
             ]
 
         searchable_fields = (
@@ -598,7 +616,11 @@ class MockProfileServer(webservice.UserWebService):
             # Unrecognised parameters. They might be supported by the real
             # profile server, but raise an exception rather than silently
             # doing the wrong thing.
-            raise ValueError("Unrecognised parameter in list call.")
+            raise ValueError(
+                "Unrecognised parameters in list call: {0}".format(
+                    kwargs.keys()
+                )
+            )
 
         return {
             'meta': {
@@ -623,7 +645,7 @@ class MockProfileServer(webservice.UserWebService):
         """
         Register a new user
         """
-        details = self._user_to_dict(user)
+        user = self._user_to_dict(user)
 
         self._check_username(user)
 
@@ -631,10 +653,10 @@ class MockProfileServer(webservice.UserWebService):
 
         # Remove 'subscribed', all the necessary information is in
         # 'subscriptions'
-        details['subscriptions'][self.app] = details.pop('subscribed')
-        self.users[username] = details
+        user['subscriptions'][self.app] = user.pop('subscribed')
+        self.users[username] = user
 
-        return details
+        return user
 
     def _set_subscription(self, user, state):
         """
@@ -666,7 +688,9 @@ class MockProfileServer(webservice.UserWebService):
         a test.
         """
 
-        self.last_reset_password = user.email
+        if user.username not in self.users:
+            self._raise_failure("Unknown user.")
+        self.last_reset_password = user.username
 
     def add_group(self, user, group):
         """
@@ -847,7 +871,14 @@ def verify_password_request(self, email):
 
     assert isinstance(webservice.profile_server, MockProfileServer)
 
+    username = getattr(webservice.profile_server,
+                       'last_reset_password',
+                       None)
+
+    assert username is not None, \
+        "Password reset has been requested."
+
     assert_equals(
         email,
-        getattr(webservice.profile_server, 'last_reset_password', None),
+        webservice.profile_server.find_by_username(username)['email']
     )

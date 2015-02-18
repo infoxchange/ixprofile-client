@@ -189,7 +189,13 @@ class UserWebService(object):
         Ensure a user with given user's email exists on the profile server,
         update the details as needed and save the user if commit is True.
         """
-        details = self.find_by_email(user.email)
+        if user.username:
+            details = self.find_by_username(user.username)
+        else:
+            details = self.find_by_email(user.email)
+            if details:
+                user.username = details['username']
+
         if details is None:
             details = self.register(user)
         else:
