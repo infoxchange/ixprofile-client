@@ -101,7 +101,7 @@ class UserWebService(object):
         """
         self._set_subscription_status(user, False)
 
-    def details(self, username=None, email=None):
+    def details(self, email=None, username=None):
         """
         Get the user details from the profile server.
 
