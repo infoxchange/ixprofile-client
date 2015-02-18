@@ -3,6 +3,7 @@ Web service to interact with the profile server user records
 """
 
 import json
+import warnings
 from logging import getLogger
 from urlparse import urljoin
 from urllib import urlencode
@@ -100,7 +101,7 @@ class UserWebService(object):
         """
         self._set_subscription_status(user, False)
 
-    def details(self, **kwargs):
+    def details(self, username=None, email=None):
         """
         Get the user details from the profile server.
 
@@ -108,16 +109,17 @@ class UserWebService(object):
         so the old calls passing 'username' stop working.
         """
 
-        if len(kwargs) != 1:
+        warnings.warn("Please user 'find_by_username' or 'find_by_email'.",
+                      DeprecationWarning)
+
+        if username is not None and email is not None:
             raise ValueError("Exactly one of 'username' or 'email' must be "
                              "specified in the arguments.")
 
-        ((lookup, value),) = kwargs.items()
-
-        if lookup == 'username':
-            return self.find_by_username(value)
-        elif lookup == 'email':
-            return self.find_by_email(value)
+        if username is not None:
+            return self.find_by_username(username)
+        elif email is not None:
+            return self.find_by_email(email)
         else:
             raise ValueError("Exactly one of 'username' or 'email' must be "
                              "specified in the arguments.")
