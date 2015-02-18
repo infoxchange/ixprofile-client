@@ -19,6 +19,7 @@ import math
 import requests
 import socket
 import urlparse
+from hashlib import sha256
 from time import time
 
 from django.conf import settings
@@ -36,7 +37,7 @@ from social.exceptions import AuthException
 import social.apps.django_app.views
 
 from ixprofile_client import webservice
-from ixprofile_client.exceptions import EmailNotUnique, ProfileServerFailure
+from ixprofile_client.exceptions import ProfileServerFailure
 
 # The real profile server, used for integration tests
 RealProfileServer = webservice.profile_server  # pylint:disable=invalid-name
@@ -136,7 +137,7 @@ def check_profile_server_user(_, email):
     Check that the user exists into the mock or real profile server
     """
 
-    details = webservice.profile_server.details(email)
+    details = webservice.profile_server.find_by_email(email)
     assert details, "User not present: %s" % email
 
 
@@ -147,7 +148,7 @@ def no_user_on_profile_server(self):
     """
 
     for row in self.hashes:
-        details = webservice.profile_server.details(row['email'])
+        details = webservice.profile_server.find_by_email(row['email'])
         assert not details, "User present: %s" % row['email']
 
 
@@ -178,7 +179,7 @@ def confirm_profile_server_users(self):
     """
 
     for row in hashes_data(self):
-        details = webservice.profile_server.details(row['email'])
+        details = webservice.profile_server.find_by_email(row['email'])
         assert details, "Could not find user: %s" % row['email']
 
         # pylint:disable=unexpected-keyword-arg,no-value-for-parameter
@@ -336,7 +337,7 @@ def create_login_cookie(self, email, minutes):
 
     # The user won't go through the python-social-auth pipeline,
     # update their details manually
-    details = webservice.profile_server.details(email)
+    details = webservice.profile_server.find_by_email(email)
     for detail in ('username', 'first_name', 'last_name'):
         if details.get(detail, None):
             setattr(user, detail, details[detail])
@@ -463,15 +464,12 @@ class MockProfileServer(webservice.UserWebService):
 
         return details
 
-    def details(self, email):
+    def find_by_username(self, username):
         """
-        Return a user's details
-        Raises EmailNotUnique if add_nonunique_email() was run with the email
+        Find a user's details by username.
         """
-        if email in self.not_unique_emails:
-            raise EmailNotUnique(self._dummy_response(), email)
 
-        return self._user_details(self.users.get(email, None))
+        return self._user_details(self.users.get(username, None))
 
     def _visible_apps(self):
         """
@@ -511,11 +509,8 @@ class MockProfileServer(webservice.UserWebService):
         username = user['username']
         exclude_email = user['email']
 
-        if any(
-            user['username'] == username
-            for email, user in self.users.items()
-            if email != exclude_email
-        ):
+        if username in self.users and \
+                self.users[username]['email'] != exclude_email:
             # Imitate the ValidationError dict returned by the real profile
             # server.
             self._raise_failure({
@@ -549,21 +544,6 @@ class MockProfileServer(webservice.UserWebService):
     def list(self, **kwargs):
         """
         List all the users subscribed to the application.
-
-        W A R N I N G ! ! !
-
-        This method probably doesn't do what you expect!
-
-        This mock does not emulate the effects of profile server parameters.
-        Therefore pagination, sorting, searching and filtering are not
-        mocked via this method.
-
-        In order to test calls to this method, we verify that it was invoked
-        with the expected kwargs (stored in MockProfileServer's
-        last_list_kwargs); see verify_last_list_call() below.
-
-        Profile Server's /user endpoint paramaters are covered by
-        tests in Profile Server.
         """
 
         self.last_list_kwargs = kwargs
@@ -571,9 +551,54 @@ class MockProfileServer(webservice.UserWebService):
         user_list = [
             self._user_details(user)
             for user in self.users.values()
-            if any(user['subscriptions'].get(app, False)
-                   for app in self._visible_apps())
         ]
+
+        # Support searching unsubscribed users by email
+        if 'email' not in kwargs:
+            user_list = [
+                user for user in user_list
+                if any(user['subscriptions'].get(app, False)
+                       for app in self._visible_apps())
+            ]
+
+        searchable_fields = (
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+        )
+
+        if 'q' in kwargs:
+            q_lookup = kwargs.pop('q')
+            user_list = [
+                user for user in user_list
+                if any(
+                    q_lookup in user[field]
+                    for field in searchable_fields
+                )
+            ]
+
+        for field in searchable_fields:
+            if field in kwargs:
+                value = kwargs.pop(field)
+                user_list = [
+                    user for user in user_list
+                    if user[field] == value
+                ]
+
+        if 'offset' in kwargs:
+            offset = kwargs.pop('offset')
+            user_list = user_list[offset:]
+
+        if 'limit' in kwargs:
+            limit = kwargs.pop('limit')
+            user_list = user_list[:limit]
+
+        if kwargs:
+            # Unrecognised parameters. They might be supported by the real
+            # profile server, but raise an exception rather than silently
+            # doing the wrong thing.
+            raise ValueError("Unrecognised parameter in list call.")
 
         return {
             'meta': {
@@ -586,19 +611,28 @@ class MockProfileServer(webservice.UserWebService):
             'objects': user_list,
         }
 
+    @staticmethod
+    def _generate_username(user):
+        """
+        Generate a username for a user.
+        """
+
+        return 'sha256:' + sha256(user['email'].lower()).hexdigest()[:23]
+
     def register(self, user):
         """
         Register a new user
         """
         details = self._user_to_dict(user)
-        email = details['email']
 
         self._check_username(user)
+
+        username = user.get('username', self._generate_username(user))
 
         # Remove 'subscribed', all the necessary information is in
         # 'subscriptions'
         details['subscriptions'][self.app] = details.pop('subscribed')
-        self.users[email] = details
+        self.users[username] = details
 
         return details
 
@@ -607,9 +641,9 @@ class MockProfileServer(webservice.UserWebService):
         Update the subscription status to state
         """
 
-        email = self._user_to_dict(user)['email']
+        username = self._user_to_dict(user)['username']
 
-        self.users[email]['subscriptions'][self.app] = state
+        self.users[username]['subscriptions'][self.app] = state
 
     def unsubscribe(self, user):
         """
@@ -645,11 +679,13 @@ class MockProfileServer(webservice.UserWebService):
         Add a user to a list of groups
         """
         details = self._user_to_dict(user)
-        user = self.users.setdefault(details['email'], details)
+        username = details['username']
+
+        user = self.users.setdefault(username, details)
         user['groups'] = list(set(user['groups'] + groups))
 
         for group in groups:
-            self.groups.setdefault(group, []).append(details['email'])
+            self.groups.setdefault(group, []).append(username)
 
         return user['groups']
 
@@ -664,12 +700,14 @@ class MockProfileServer(webservice.UserWebService):
         Remove a user from multiple groups
         """
         details = self._user_to_dict(user)
-        user = self.users[details['email']]
+        username = details['username']
+
+        user = self.users[username]
         user['groups'] = list(set(user.get('groups', [])) - set(groups))
 
         for group in groups:
             try:
-                self.groups.setdefault(group, []).remove(details['email'])
+                self.groups.setdefault(group, []).remove(username)
             except ValueError:
                 pass
 
@@ -680,19 +718,17 @@ class MockProfileServer(webservice.UserWebService):
         Get the users for the groups
         """
 
-        try:
-            users = [self.details(email) for email in self.groups[group]]
-        except KeyError:
-            users = []
-
-        return users
+        return [
+            self.find_by_username(username)
+            for username in self.groups.get(group, [])
+        ]
 
     def set_details(self, user, **kwargs):
         """
         Set details for the user
         """
 
-        email = self._user_to_dict(user)['email']
+        username = self._user_to_dict(user)['username']
 
         # 'subscribed' overrides 'subscriptions'
         try:
@@ -702,20 +738,20 @@ class MockProfileServer(webservice.UserWebService):
             pass
 
         for key in kwargs:
-            if key not in self.users[email]:
+            if key not in self.users[username]:
                 self._raise_failure("Invalid user key: {0}".format(key))
 
         try:
-            self.users[email]['subscriptions'].update(
+            self.users[username]['subscriptions'].update(
                 kwargs.pop('subscriptions'))
         except KeyError:
             pass
 
-        self._check_username(user)
+        self._check_username(kwargs)
 
-        self.users[email].update(kwargs)
+        self.users[username].update(kwargs)
 
-        return self.users[email]
+        return self.users[username]
 
     def set_user_data(self, user, key, value):
         """
@@ -729,7 +765,7 @@ class MockProfileServer(webservice.UserWebService):
         data['id'] = id(data)
 
         details = self._user_to_dict(user)
-        self.user_data.setdefault(details['email'], []).append(data)
+        self.user_data.setdefault(details['username'], []).append(data)
 
     def delete_user_data(self, id_):
         """
@@ -748,7 +784,7 @@ class MockProfileServer(webservice.UserWebService):
 
         details = self._user_to_dict(user)
         try:
-            data = self.user_data[details['email']]
+            data = self.user_data[details['username']]
 
             if key:
                 data = [record

@@ -8,12 +8,12 @@ class ProfileServerException(Exception):
     Base exception for all profile server errors
     """
 
-    def __init__(self, response):
+    def __init__(self, response=None):
         super(ProfileServerFailure, self).__init__()
         self.response = response
         try:
             self.json = self.response.json()
-        except ValueError:
+        except (AttributeError, ValueError):
             pass
 
     def __str__(self):

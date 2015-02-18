@@ -150,6 +150,6 @@ class TestLettuceSteps(object):
         )
 
         for email in self.expected_users.keys():
-            stored = webservice.profile_server.details(email)
+            stored = webservice.profile_server.find_by_email(email)
 
             assert_equals(self.details_for(email), stored)

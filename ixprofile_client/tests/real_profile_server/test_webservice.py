@@ -17,8 +17,8 @@ class TestWebservice(RealProfileServerTestCase):
     """
 
     APP = 'ixprofile_client_test'
-    test_email = 'bashful@infoxchange.net.au'
-    user = MagicMock(email=test_email)
+    test_username = 'bashful'
+    user = MagicMock(username=test_username)
 
     @classmethod
     def setUpClass(cls):
@@ -63,9 +63,10 @@ class TestWebservice(RealProfileServerTestCase):
         """
         Test getting user details
         """
-        details = self.profile_server.details(self.test_email)
+        details = self.profile_server.find_by_username(self.test_username)
 
-        assert_equals(self.test_email, details['email'])
+        assert_equals(self.test_username, details['username'])
+        assert_equals('bashful@infoxchange.net.au', details['email'])
         self.assert_looks_like_a_user(details)
 
     def assert_looks_like_a_user(self, obj):
@@ -121,5 +122,5 @@ class TestWebservice(RealProfileServerTestCase):
         # pylint:disable=protected-access
         self.assertEquals(
             self.profile_server._list_uri(a='a', b='b'),
-            self.profile_server.profile_server + '/api/v1/user/?a=a&b=b'
+            self.profile_server.profile_server + '/api/v2/user/?a=a&b=b'
         )
