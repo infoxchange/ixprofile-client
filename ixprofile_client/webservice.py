@@ -4,50 +4,17 @@ Web service to interact with the profile server user records
 
 import json
 from logging import getLogger
-from urlparse import parse_qs, urljoin, urlparse
+from urlparse import urljoin
 from urllib import urlencode
 
 import requests
-from requests.auth import AuthBase
 
 from django.conf import settings
-
-from ixdjango.utils import flatten_auth_header
-from ixwsauth import auth
 
 from ixprofile_client import exceptions
 
 
 LOG = getLogger(__name__)
-
-
-class OAuth(AuthBase):
-    """
-    OAuth-like authorization for requests library.
-    """
-    def __init__(self, key, secret):
-        """
-        Initialize the key and secret for the AuthManager
-        """
-        self.key = key
-        self.secret = lambda: secret
-
-    def __call__(self, request):
-        """
-        Sign the request.
-        """
-        payload = {
-            'method': request.method,
-            'url': request.url,
-            'params': parse_qs(urlparse(request.url).query),
-        }
-        auth_man = auth.AuthManager()
-        signed_payload = auth_man.oauth_signed_payload(self, payload)
-        request.headers['Authorization'] = flatten_auth_header(
-            signed_payload['headers']['Authorization'],
-            'OAuth'
-        )
-        return request
 
 
 class UserWebService(object):
@@ -90,7 +57,10 @@ class UserWebService(object):
         return requests.request(
             method,
             url,
-            auth=self.auth,
+            auth=(
+                settings.PROFILE_SERVER_KEY,
+                settings.PROFILE_SERVER_SECRET
+            ),
             verify=settings.SSL_CA_FILE,
             **kwargs
         )
@@ -100,10 +70,6 @@ class UserWebService(object):
         Create a new instance of a Web service.
         """
         self.profile_server = settings.PROFILE_SERVER
-        self.auth = OAuth(
-            settings.PROFILE_SERVER_KEY,
-            settings.PROFILE_SERVER_SECRET
-        )
 
     @staticmethod
     def _raise_for_failure(response):
