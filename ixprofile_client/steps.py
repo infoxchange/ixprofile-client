@@ -791,8 +791,8 @@ class MockProfileServer(webservice.UserWebService):
                 self._raise_failure("Invalid user key: {0}".format(key))
 
         try:
-            subscriptions = kwargs.pop('subscriptions')
-            self.users[username]['subscriptions'].update(subscriptions)
+            self.users[username]['subscriptions'].update(
+                kwargs.pop('subscriptions'))
         except KeyError:
             pass
 
