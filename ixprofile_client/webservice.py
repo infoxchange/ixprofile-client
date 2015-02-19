@@ -6,11 +6,11 @@ import json
 import warnings
 from logging import getLogger
 from urlparse import urljoin
-from urllib import urlencode
 
 import requests
 
 from django.conf import settings
+from django.utils.http import urlencode
 
 from ixprofile_client import exceptions
 
