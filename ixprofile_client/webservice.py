@@ -5,12 +5,12 @@ Web service to interact with the profile server user records
 import json
 from logging import getLogger
 from urlparse import parse_qs, urljoin, urlparse
-from urllib import urlencode
 
 import requests
 from requests.auth import AuthBase
 
 from django.conf import settings
+from django.utils.http import urlencode
 
 from ixdjango.utils import flatten_auth_header
 from ixwsauth import auth
