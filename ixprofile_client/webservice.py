@@ -215,7 +215,7 @@ class UserWebService(object):
 
         response = self._request(
             'POST',
-            urljoin(self._detail_uri(user.username), 'reset-password'),
+            urljoin(self._detail_uri(user.username), 'reset-password/'),
         )
         self._raise_for_failure(response)
 
