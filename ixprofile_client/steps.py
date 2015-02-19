@@ -504,7 +504,7 @@ class MockProfileServer(webservice.UserWebService):
         Ensure ever_subscribed_websites is up to date.
         """
         # Add any active subscriptions.
-        active_subscriptions = [app for app in user['subscriptions'].keys()
+        active_subscriptions = [app for app in user['subscriptions']
                                 if user['subscriptions'][app]]
         user['ever_subscribed_websites'] += active_subscriptions
 
