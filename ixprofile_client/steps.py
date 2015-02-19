@@ -448,6 +448,7 @@ class MockProfileServer(webservice.UserWebService):
             'mobile': (False, ''),
             'state': (False, ''),
             'last_login': (True, None),
+            'is_locked': (False, False),
             'groups': (False, []),
             'subscribed': (False, False),
             'subscriptions': (False, {
@@ -623,6 +624,16 @@ class MockProfileServer(webservice.UserWebService):
 
         self._set_subscription(user, True)
 
+    def reset_password(self, user):
+        """
+        Mock sending the user a password reset email.
+
+        The user's email is saved on the object, so it can be checked later in
+        a test.
+        """
+
+        self.last_reset_password = user.email
+
     def add_group(self, user, group):
         """
         Add a user to a group
@@ -789,3 +800,18 @@ def verify_last_list_call(self):
     expected_kwargs = dict((key, value) for (key, value) in self.table)
 
     assert_equals(expected_kwargs, webservice.profile_server.last_list_kwargs)
+
+
+@step(r'Password reset is requested for "([^"]+)"')
+def verify_password_request(self, email):
+    """
+    Verify that a password reset email was requested last for the specified
+    email.
+    """
+
+    assert isinstance(webservice.profile_server, MockProfileServer)
+
+    assert_equals(
+        email,
+        getattr(webservice.profile_server, 'last_reset_password', None),
+    )
