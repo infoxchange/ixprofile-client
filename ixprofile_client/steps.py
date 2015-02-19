@@ -20,6 +20,7 @@ import requests
 import socket
 import urlparse
 from hashlib import sha256
+from operator import itemgetter
 from time import time
 
 from django.conf import settings
@@ -567,12 +568,26 @@ class MockProfileServer(webservice.UserWebService):
             for user in self.users.values()
         ]
 
+        # Default sorting in PS is by ID, do stable sorting by email instead
+        # Email is more meaningful than hashed usernames
+        sort_by = kwargs.pop('sort_by', 'email')
+        is_descending = sort_by[0] == '-'
+        if is_descending:
+            sort_by = sort_by[1:]
+        user_list.sort(key=itemgetter(sort_by, 'email'))
+        if is_descending:
+            user_list.reverse()
+
         # Filter only subscribed/adminable users, unless searching by email
         if 'email' not in kwargs:
             if kwargs.pop('include_adminable', False):
                 interesting_apps = self._visible_apps()
             else:
                 interesting_apps = (self.app,)
+
+            # TODO: was_subscribed is not supported
+            kwargs.pop('was_subscribed', None)
+
             user_list = [
                 user for user in user_list
                 if any(user['subscriptions'].get(app, False)
@@ -587,29 +602,32 @@ class MockProfileServer(webservice.UserWebService):
         )
 
         if 'q' in kwargs:
-            q_lookup = kwargs.pop('q')
+            q_lookup = kwargs.pop('q').lower()
             user_list = [
                 user for user in user_list
                 if any(
-                    q_lookup in user[field]
+                    q_lookup in user[field].lower()
                     for field in searchable_fields
                 )
             ]
 
         for field in searchable_fields:
             if field in kwargs:
-                value = kwargs.pop(field)
+                value = kwargs.pop(field).lower()
                 user_list = [
                     user for user in user_list
-                    if user[field] == value
+                    if user[field].lower() == value
                 ]
 
-        if 'offset' in kwargs:
-            offset = kwargs.pop('offset')
-            user_list = user_list[offset:]
+        # Save total count before chopping the list
+        total_count = len(user_list)
 
-        if 'limit' in kwargs:
-            limit = kwargs.pop('limit')
+        offset = int(kwargs.pop('offset', 0))
+        user_list = user_list[offset:]
+
+        # Limit is implied to be 20 if omitted
+        limit = int(kwargs.pop('limit', 20))
+        if limit > 0:
             user_list = user_list[:limit]
 
         if kwargs:
@@ -624,11 +642,11 @@ class MockProfileServer(webservice.UserWebService):
 
         return {
             'meta': {
-                'limit': kwargs.get('limit', 20),
+                'limit': limit,
                 'next': None,
-                'offset': kwargs.get('offset', 0),
+                'offset': offset,
                 'previous': None,
-                'total_count': len(user_list),
+                'total_count': total_count,
             },
             'objects': user_list,
         }
