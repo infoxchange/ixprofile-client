@@ -442,8 +442,8 @@ class MockProfileServer(webservice.UserWebService):
             'is_locked': (False, False),
             'groups': (False, []),
             'subscribed': (False, False),
-            'subscriptions': (False, {
-            }),
+            'subscriptions': (False, {}),
+            'ever_subscribed_websites': (False, []),
         }
 
         for key, (real, default) in details_fields.items():
@@ -496,7 +496,24 @@ class MockProfileServer(webservice.UserWebService):
             for app in self._visible_apps()
         }
         user['subscribed'] = user['subscriptions'][self.app]
+        self._update_ever_subscribed_websites(user)
         return user
+
+    def _update_ever_subscribed_websites(self, user):
+        """
+        Ensure ever_subscribed_websites is up to date.
+        """
+        # Add any active subscriptions.
+        active_subscriptions = [app for app in user['subscriptions']
+                                if user['subscriptions'][app]]
+        user['ever_subscribed_websites'] += active_subscriptions
+
+        # Current app should always be included.
+        user['ever_subscribed_websites'] += [self.app]
+
+        # Get rid of any duplicate entries.
+        user['ever_subscribed_websites'] = \
+            list(set(user['ever_subscribed_websites']))
 
     def _check_username(self, user):
         """
@@ -661,6 +678,7 @@ class MockProfileServer(webservice.UserWebService):
         # Remove 'subscribed', all the necessary information is in
         # 'subscriptions'
         user['subscriptions'][self.app] = user.pop('subscribed')
+        self._update_ever_subscribed_websites(user)
         self.users[username] = user
 
         return user

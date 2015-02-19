@@ -39,6 +39,7 @@ class TestLettuceSteps(object):
         'is_locked': False,
         'subscribed': False,
         'subscriptions': {'mock_app': False},
+        'ever_subscribed_websites': [],
         'username': '',
         'groups': [],
     }
@@ -51,6 +52,7 @@ class TestLettuceSteps(object):
                 'golden-condor': False,
                 'solaris': False,
             },
+            'ever_subscribed_websites': ['mock_app'],
             'username': 'sha256:a5d8d5f520acfd109e2bd83',
             'first_name': u'John',
             'last_name': u'Zoidberg',
@@ -63,6 +65,7 @@ class TestLettuceSteps(object):
                 'golden-condor': False,
                 'solaris': False,
             },
+            'ever_subscribed_websites': ['mock_app'],
             'username': 'sha256:ef205ea3e9e71a3a46e2118',
             'first_name': u'Hattie',
             'last_name': u'McDoogal',
@@ -75,6 +78,7 @@ class TestLettuceSteps(object):
                 'golden-condor': False,
                 'solaris': False,
             },
+            'ever_subscribed_websites': ['mock_app'],
             'username': 'sha256:7365214e537b3669cc13012',
             'first_name': u'Antonio',
             'last_name': u'Calculon',
@@ -90,6 +94,9 @@ class TestLettuceSteps(object):
                 u'golden-condor': True,
                 u'solaris': True,
             },
+            'ever_subscribed_websites': [
+                'golden-condor', 'solaris', 'mock_app'
+            ],
         }
     }
 

@@ -65,7 +65,8 @@ class RemoveGroupsTestCase(FakeProfileServerTestCase):
         """
 
         filter_interesting = \
-            leave_only_keys('email', 'subscribed', 'subscriptions')
+            leave_only_keys('email', 'subscribed', 'subscriptions',
+                            'ever_subscribed_websites')
 
         users = self.mock_ps.list()
 
@@ -83,6 +84,7 @@ class RemoveGroupsTestCase(FakeProfileServerTestCase):
                     'mock_app': True,
                     'another_app': False,
                 },
+                'ever_subscribed_websites': ['mock_app']
             },
             {
                 'email': 'corvax@gov.gl',
@@ -91,5 +93,8 @@ class RemoveGroupsTestCase(FakeProfileServerTestCase):
                     'mock_app': True,
                     'another_app': True,
                 },
+                'ever_subscribed_websites': [
+                    'mock_app', 'unrelated', 'another_app'
+                ]
             },
         ])
