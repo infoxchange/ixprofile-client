@@ -69,7 +69,7 @@ class RemoveGroupsTestCase(FakeProfileServerTestCase):
 
         users = self.mock_ps.list()
 
-        self.assertEqual(users['meta']['total_count'], 3)
+        self.assertEqual(users['meta']['total_count'], 2)
 
         user_list = sorted(
             map(filter_interesting, users['objects']),
@@ -89,14 +89,6 @@ class RemoveGroupsTestCase(FakeProfileServerTestCase):
                 'subscribed': True,
                 'subscriptions': {
                     'mock_app': True,
-                    'another_app': True,
-                },
-            },
-            {
-                'email': 'muzzy@stell.ar',
-                'subscribed': False,
-                'subscriptions': {
-                    'mock_app': False,
                     'another_app': True,
                 },
             },

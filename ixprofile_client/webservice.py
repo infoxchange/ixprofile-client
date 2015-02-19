@@ -3,17 +3,14 @@ Web service to interact with the profile server user records
 """
 
 import json
+import warnings
 from logging import getLogger
-from urlparse import parse_qs, urljoin, urlparse
-from urllib import urlencode
+from urlparse import urljoin
 
 import requests
-from requests.auth import AuthBase
 
 from django.conf import settings
-
-from ixdjango.utils import flatten_auth_header
-from ixwsauth import auth
+from django.utils.http import urlencode
 
 from ixprofile_client import exceptions
 
@@ -21,43 +18,14 @@ from ixprofile_client import exceptions
 LOG = getLogger(__name__)
 
 
-class OAuth(AuthBase):
-    """
-    OAuth-like authorization for requests library.
-    """
-    def __init__(self, key, secret):
-        """
-        Initialize the key and secret for the AuthManager
-        """
-        self.key = key
-        self.secret = lambda: secret
-
-    def __call__(self, request):
-        """
-        Sign the request.
-        """
-        payload = {
-            'method': request.method,
-            'url': request.url,
-            'params': parse_qs(urlparse(request.url).query),
-        }
-        auth_man = auth.AuthManager()
-        signed_payload = auth_man.oauth_signed_payload(self, payload)
-        request.headers['Authorization'] = flatten_auth_header(
-            signed_payload['headers']['Authorization'],
-            'OAuth'
-        )
-        return request
-
-
 class UserWebService(object):
     """
     Web service to interact with the profile server user records
     """
 
-    USER_LIST_URI = "/api/v1/user/"
-    USER_URI = "/api/v1/user/%s/"
-    GROUP_URI = "/api/v1/group/%s/"
+    USER_LIST_URI = "/api/v2/user/"
+    USER_URI = "/api/v2/user/%s/"
+    GROUP_URI = "/api/v2/group/%s/"
 
     register_email_template = None
 
@@ -72,11 +40,11 @@ class UserWebService(object):
 
         return urljoin(self.profile_server, self.USER_LIST_URI) + query_string
 
-    def _detail_uri(self, email):
+    def _detail_uri(self, username):
         """
         The URL for the user details.
         """
-        return urljoin(self.profile_server, self.USER_URI % email)
+        return urljoin(self.profile_server, self.USER_URI % username)
 
     def _request(self, method, url, **kwargs):
         """
@@ -90,7 +58,10 @@ class UserWebService(object):
         return requests.request(
             method,
             url,
-            auth=self.auth,
+            auth=(
+                settings.PROFILE_SERVER_KEY,
+                settings.PROFILE_SERVER_SECRET
+            ),
             verify=settings.SSL_CA_FILE,
             **kwargs
         )
@@ -100,10 +71,6 @@ class UserWebService(object):
         Create a new instance of a Web service.
         """
         self.profile_server = settings.PROFILE_SERVER
-        self.auth = OAuth(
-            settings.PROFILE_SERVER_KEY,
-            settings.PROFILE_SERVER_SECRET
-        )
 
     @staticmethod
     def _raise_for_failure(response):
@@ -118,7 +85,7 @@ class UserWebService(object):
         Set the subscription status of a user.
         """
         data = {'subscribed': status}
-        response = self._request('PATCH', self._detail_uri(user.email),
+        response = self._request('PATCH', self._detail_uri(user.username),
                                  data=json.dumps(data))
         self._raise_for_failure(response)
 
@@ -134,20 +101,56 @@ class UserWebService(object):
         """
         self._set_subscription_status(user, False)
 
-    def details(self, email):
+    def details(self, email=None, username=None):
         """
-        Get the user details from the profile server
+        Get the user details from the profile server.
+
+        Either 'username' or 'email' must be explicitly passed as kwargs,
+        so the old calls passing 'username' stop working.
         """
-        response = self._request('GET', self._detail_uri(email))
-        # pylint:disable=no-member
-        # Instance of 'LookupDict' has no 'not_found' member
+
+        warnings.warn("Please user 'find_by_username' or 'find_by_email'.",
+                      DeprecationWarning)
+
+        if username is not None and email is not None:
+            raise ValueError("Exactly one of 'username' or 'email' must be "
+                             "specified in the arguments.")
+
+        if username is not None:
+            return self.find_by_username(username)
+        elif email is not None:
+            return self.find_by_email(email)
+        else:
+            raise ValueError("Exactly one of 'username' or 'email' must be "
+                             "specified in the arguments.")
+
+    def find_by_username(self, username):
+        """
+        Find a user by username.
+        """
+
+        response = self._request('GET', self._detail_uri(username))
         if response.status_code == requests.codes.not_found:
             return None
-        elif response.status_code == requests.codes.multiple_choices:
-            raise exceptions.EmailNotUnique(response, email)
-        else:
-            self._raise_for_failure(response)
-            return response.json()
+
+        self._raise_for_failure(response)
+        return response.json()
+
+    def find_by_email(self, email):
+        """
+        Find a user by email.
+
+        If the email address is not unique, raise a EmailNotUnique exception.
+        """
+
+        users = self.list(email=email)
+        count = users['meta']['total_count']
+        if count == 0:
+            return None
+        elif count > 1:
+            raise exceptions.EmailNotUnique(None, email)
+
+        return users['objects'][0]
 
     def list(self, **kwargs):
         """
@@ -186,7 +189,13 @@ class UserWebService(object):
         Ensure a user with given user's email exists on the profile server,
         update the details as needed and save the user if commit is True.
         """
-        details = self.details(user.email)
+        if user.username:
+            details = self.find_by_username(user.username)
+        else:
+            details = self.find_by_email(user.email)
+            if details:
+                user.username = details['username']
+
         if details is None:
             details = self.register(user)
         else:
@@ -206,7 +215,7 @@ class UserWebService(object):
 
         response = self._request(
             'POST',
-            urljoin(self._detail_uri(user.email), 'reset-password'),
+            urljoin(self._detail_uri(user.username), 'reset-password/'),
         )
         self._raise_for_failure(response)
 
@@ -245,11 +254,13 @@ class UserWebService(object):
         Add a user to the list of named groups
         """
         data = {
-            'groups': list(set(self.details(user.email)['groups'] + groups)),
+            'groups': list(
+                set(self.find_by_username(user.username)['groups'] + groups)
+            ),
         }
 
         response = self._request('PATCH',
-                                 self._detail_uri(user.email),
+                                 self._detail_uri(user.username),
                                  data=json.dumps(data))
         self._raise_for_failure(response)
 
@@ -266,14 +277,14 @@ class UserWebService(object):
         Remove a user from multiple groups
         """
 
-        current_groups = set(self.details(user.email)['groups'])
+        current_groups = set(self.find_by_username(user.username)['groups'])
 
         data = {
             'groups': list(current_groups - set(groups)),
         }
 
         response = self._request('PATCH',
-                                 self._detail_uri(user.email),
+                                 self._detail_uri(user.username),
                                  data=json.dumps(data))
         self._raise_for_failure(response)
 
@@ -285,7 +296,7 @@ class UserWebService(object):
         """
 
         response = self._request('PATCH',
-                                 self._detail_uri(user.email),
+                                 self._detail_uri(user.username),
                                  data=json.dumps(details))
         self._raise_for_failure(response)
 
@@ -296,7 +307,7 @@ class UserWebService(object):
         Get the user data for the user, including an optional key
         """
 
-        url = self._detail_uri(user.email) + 'preferences/'
+        url = self._detail_uri(user.username) + 'preferences/'
         params = {'limit': 0}
 
         if key:
@@ -318,14 +329,14 @@ class UserWebService(object):
         """
 
         data = {
-            'user': self.USER_URI % user.email,
+            'user': self.USER_URI % user.username,
             'type': key,
             'data': value,
         }
 
         response = self._request('POST',
                                  urljoin(self.profile_server,
-                                         '/api/v1/user-preference/'),
+                                         '/api/v2/user-preference/'),
                                  data=json.dumps(data))
         self._raise_for_failure(response)
 
@@ -338,7 +349,7 @@ class UserWebService(object):
 
         response = self._request('DELETE',
                                  urljoin(self.profile_server,
-                                         '/api/v1/user-preference/%d/' % id_))
+                                         '/api/v2/user-preference/%d/' % id_))
         self._raise_for_failure(response)
 
 
