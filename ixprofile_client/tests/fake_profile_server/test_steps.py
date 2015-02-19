@@ -51,6 +51,7 @@ class TestLettuceSteps(object):
                 'golden-condor': False,
                 'solaris': False,
             },
+            'username': 'sha256:a5d8d5f520acfd109e2bd83',
             'first_name': u'John',
             'last_name': u'Zoidberg',
             'phone': 1468023579,
@@ -62,6 +63,7 @@ class TestLettuceSteps(object):
                 'golden-condor': False,
                 'solaris': False,
             },
+            'username': 'sha256:ef205ea3e9e71a3a46e2118',
             'first_name': u'Hattie',
             'last_name': u'McDoogal',
             'phone': u'',
@@ -73,12 +75,14 @@ class TestLettuceSteps(object):
                 'golden-condor': False,
                 'solaris': False,
             },
+            'username': 'sha256:7365214e537b3669cc13012',
             'first_name': u'Antonio',
             'last_name': u'Calculon',
             'phone': u'0292538800',
         },
         u'mendoza@mcog.fr': {
             'subscribed': True,
+            'username': 'sha256:2284980b3e797138d378ad1',
             'first_name': u'Mendoza',
             'last_name': u'Unknown',
             'phone': u'',
@@ -150,6 +154,6 @@ class TestLettuceSteps(object):
         )
 
         for email in self.expected_users.keys():
-            stored = webservice.profile_server.details(email)
+            stored = webservice.profile_server.find_by_email(email)
 
             assert_equals(self.details_for(email), stored)

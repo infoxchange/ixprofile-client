@@ -19,6 +19,8 @@ import math
 import requests
 import socket
 import urlparse
+from hashlib import sha256
+from operator import itemgetter
 from time import time
 
 from django.conf import settings
@@ -125,7 +127,7 @@ def add_profile_server_users(self):
 @step('I have multiple users in the fake profile server with email "([^"]*)"')
 def add_nonunique_email(_, email):
     """
-    Subsequent to this, details(email) will throw EmailNotUnique
+    Subsequent to this, find_by_email(email) will throw EmailNotUnique
     """
     webservice.profile_server.not_unique_emails.append(email)
 
@@ -136,7 +138,7 @@ def check_profile_server_user(_, email):
     Check that the user exists into the mock or real profile server
     """
 
-    details = webservice.profile_server.details(email)
+    details = webservice.profile_server.find_by_email(email)
     assert details, "User not present: %s" % email
 
 
@@ -147,7 +149,7 @@ def no_user_on_profile_server(self):
     """
 
     for row in self.hashes:
-        details = webservice.profile_server.details(row['email'])
+        details = webservice.profile_server.find_by_email(row['email'])
         assert not details, "User present: %s" % row['email']
 
 
@@ -178,7 +180,7 @@ def confirm_profile_server_users(self):
     """
 
     for row in hashes_data(self):
-        details = webservice.profile_server.details(row['email'])
+        details = webservice.profile_server.find_by_email(row['email'])
         assert details, "Could not find user: %s" % row['email']
 
         # pylint:disable=unexpected-keyword-arg,no-value-for-parameter
@@ -197,19 +199,8 @@ def confirm_profile_server_users(self):
                   for group in row.get('groups', '').split(',')
                   if group != '']
 
-        # This should be part of ixprofileclient
-        data = {
-            'groups': groups,
-        }
-        # pylint:disable=protected-access
-        headers = {'content-type': 'application/json'}
-        response = requests.patch(
-            webservice.profile_server._detail_uri(user.email),
-            auth=webservice.profile_server.auth,
-            headers=headers,
-            verify=settings.SSL_CA_FILE,
-            data=json.dumps(data))
-        response.raise_for_status()
+        webservice.profile_server.remove_groups(user, details['groups'])
+        webservice.profile_server.add_groups(user, groups)
 
 
 @step(r'I log in to the real profile server with username "([^"]*)" and '
@@ -336,7 +327,7 @@ def create_login_cookie(self, email, minutes):
 
     # The user won't go through the python-social-auth pipeline,
     # update their details manually
-    details = webservice.profile_server.details(email)
+    details = webservice.profile_server.find_by_email(email)
     for detail in ('username', 'first_name', 'last_name'):
         if details.get(detail, None):
             setattr(user, detail, details[detail])
@@ -432,8 +423,8 @@ class MockProfileServer(webservice.UserWebService):
         self.user_data = {}
         self.groups = {}
 
-    @staticmethod
-    def _user_to_dict(user):
+    @classmethod
+    def _user_to_dict(cls, user):
         """
         If user is a Django User, convert it to a dict
         """
@@ -461,17 +452,28 @@ class MockProfileServer(webservice.UserWebService):
             elif obj_type != User:
                 details[key] = user.get(key, default)
 
+        if not details['username']:
+            details['username'] = cls._generate_username(details)
+
         return details
 
-    def details(self, email):
+    def find_by_email(self, email):
         """
-        Return a user's details
-        Raises EmailNotUnique if add_nonunique_email() was run with the email
+        Find a user's details by email.
+        Raise an error on duplicate emails.
         """
-        if email in self.not_unique_emails:
-            raise EmailNotUnique(self._dummy_response(), email)
 
-        return self._user_details(self.users.get(email, None))
+        if email in self.not_unique_emails:
+            raise EmailNotUnique(None, email)
+
+        return super(MockProfileServer, self).find_by_email(email)
+
+    def find_by_username(self, username):
+        """
+        Find a user's details by username.
+        """
+
+        return self._user_details(self.users.get(username, None))
 
     def _visible_apps(self):
         """
@@ -511,11 +513,8 @@ class MockProfileServer(webservice.UserWebService):
         username = user['username']
         exclude_email = user['email']
 
-        if any(
-            user['username'] == username
-            for email, user in self.users.items()
-            if email != exclude_email
-        ):
+        if username in self.users and \
+                self.users[username]['email'] != exclude_email:
             # Imitate the ValidationError dict returned by the real profile
             # server.
             self._raise_failure({
@@ -546,70 +545,134 @@ class MockProfileServer(webservice.UserWebService):
         raise ProfileServerFailure(
             self._dummy_response(json.dumps(error_json)))
 
-    def list(self, **kwargs):
+    def list(self, **kwargs):  # pylint:disable=too-complex
         """
         List all the users subscribed to the application.
-
-        W A R N I N G ! ! !
-
-        This method probably doesn't do what you expect!
-
-        This mock does not emulate the effects of profile server parameters.
-        Therefore pagination, sorting, searching and filtering are not
-        mocked via this method.
-
-        In order to test calls to this method, we verify that it was invoked
-        with the expected kwargs (stored in MockProfileServer's
-        last_list_kwargs); see verify_last_list_call() below.
-
-        Profile Server's /user endpoint paramaters are covered by
-        tests in Profile Server.
         """
 
-        self.last_list_kwargs = kwargs
+        self.last_list_kwargs = kwargs.copy()
 
         user_list = [
             self._user_details(user)
             for user in self.users.values()
-            if any(user['subscriptions'].get(app, False)
-                   for app in self._visible_apps())
         ]
+
+        # Default sorting in PS is by ID, do stable sorting by email instead
+        # Email is more meaningful than hashed usernames
+        sort_by = kwargs.pop('sort_by', 'email')
+        is_descending = sort_by[0] == '-'
+        if is_descending:
+            sort_by = sort_by[1:]
+        user_list.sort(key=itemgetter(sort_by, 'email'))
+        if is_descending:
+            user_list.reverse()
+
+        # Filter only subscribed/adminable users, unless searching by email
+        if 'email' not in kwargs:
+            if kwargs.pop('include_adminable', False):
+                interesting_apps = self._visible_apps()
+            else:
+                interesting_apps = (self.app,)
+
+            # TODO: was_subscribed is not supported
+            kwargs.pop('was_subscribed', None)
+
+            user_list = [
+                user for user in user_list
+                if any(user['subscriptions'].get(app, False)
+                       for app in interesting_apps)
+            ]
+
+        searchable_fields = (
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+        )
+
+        if 'q' in kwargs:
+            q_lookup = kwargs.pop('q').lower()
+            user_list = [
+                user for user in user_list
+                if any(
+                    q_lookup in user[field].lower()
+                    for field in searchable_fields
+                )
+            ]
+
+        for field in searchable_fields:
+            if field in kwargs:
+                value = kwargs.pop(field).lower()
+                user_list = [
+                    user for user in user_list
+                    if user[field].lower() == value
+                ]
+
+        # Save total count before chopping the list
+        total_count = len(user_list)
+
+        offset = int(kwargs.pop('offset', 0))
+        user_list = user_list[offset:]
+
+        # Limit is implied to be 20 if omitted
+        limit = int(kwargs.pop('limit', 20))
+        if limit > 0:
+            user_list = user_list[:limit]
+
+        if kwargs:
+            # Unrecognised parameters. They might be supported by the real
+            # profile server, but raise an exception rather than silently
+            # doing the wrong thing.
+            raise ValueError(
+                "Unrecognised parameters in list call: {0}".format(
+                    kwargs.keys()
+                )
+            )
 
         return {
             'meta': {
-                'limit': kwargs.get('limit', 20),
+                'limit': limit,
                 'next': None,
-                'offset': kwargs.get('offset', 0),
+                'offset': offset,
                 'previous': None,
-                'total_count': len(user_list),
+                'total_count': total_count,
             },
             'objects': user_list,
         }
+
+    @staticmethod
+    def _generate_username(user):
+        """
+        Generate a username for a user.
+        """
+
+        return 'sha256:' + sha256(user['email'].lower()).hexdigest()[:23]
 
     def register(self, user):
         """
         Register a new user
         """
-        details = self._user_to_dict(user)
-        email = details['email']
+        user = self._user_to_dict(user)
 
         self._check_username(user)
 
+        username = user.get('username', self._generate_username(user))
+
         # Remove 'subscribed', all the necessary information is in
         # 'subscriptions'
-        details['subscriptions'][self.app] = details.pop('subscribed')
-        self.users[email] = details
+        user['subscriptions'][self.app] = user.pop('subscribed')
+        self.users[username] = user
 
-        return details
+        return user
 
     def _set_subscription(self, user, state):
         """
         Update the subscription status to state
         """
 
-        email = self._user_to_dict(user)['email']
+        username = self._user_to_dict(user)['username']
 
-        self.users[email]['subscriptions'][self.app] = state
+        self.users[username]['subscriptions'][self.app] = state
 
     def unsubscribe(self, user):
         """
@@ -632,7 +695,9 @@ class MockProfileServer(webservice.UserWebService):
         a test.
         """
 
-        self.last_reset_password = user.email
+        if user.username not in self.users:
+            self._raise_failure("Unknown user.")
+        self.last_reset_password = user.username
 
     def add_group(self, user, group):
         """
@@ -645,11 +710,13 @@ class MockProfileServer(webservice.UserWebService):
         Add a user to a list of groups
         """
         details = self._user_to_dict(user)
-        user = self.users.setdefault(details['email'], details)
+        username = details['username']
+
+        user = self.users.setdefault(username, details)
         user['groups'] = list(set(user['groups'] + groups))
 
         for group in groups:
-            self.groups.setdefault(group, []).append(details['email'])
+            self.groups.setdefault(group, []).append(username)
 
         return user['groups']
 
@@ -664,12 +731,14 @@ class MockProfileServer(webservice.UserWebService):
         Remove a user from multiple groups
         """
         details = self._user_to_dict(user)
-        user = self.users[details['email']]
+        username = details['username']
+
+        user = self.users[username]
         user['groups'] = list(set(user.get('groups', [])) - set(groups))
 
         for group in groups:
             try:
-                self.groups.setdefault(group, []).remove(details['email'])
+                self.groups.setdefault(group, []).remove(username)
             except ValueError:
                 pass
 
@@ -680,19 +749,17 @@ class MockProfileServer(webservice.UserWebService):
         Get the users for the groups
         """
 
-        try:
-            users = [self.details(email) for email in self.groups[group]]
-        except KeyError:
-            users = []
-
-        return users
+        return [
+            self.find_by_username(username)
+            for username in self.groups.get(group, [])
+        ]
 
     def set_details(self, user, **kwargs):
         """
         Set details for the user
         """
 
-        email = self._user_to_dict(user)['email']
+        username = self._user_to_dict(user)['username']
 
         # 'subscribed' overrides 'subscriptions'
         try:
@@ -702,20 +769,20 @@ class MockProfileServer(webservice.UserWebService):
             pass
 
         for key in kwargs:
-            if key not in self.users[email]:
+            if key not in self.users[username]:
                 self._raise_failure("Invalid user key: {0}".format(key))
 
         try:
-            self.users[email]['subscriptions'].update(
+            self.users[username]['subscriptions'].update(
                 kwargs.pop('subscriptions'))
         except KeyError:
             pass
 
-        self._check_username(user)
+        self._check_username(kwargs)
 
-        self.users[email].update(kwargs)
+        self.users[username].update(kwargs)
 
-        return self.users[email]
+        return self.users[username]
 
     def set_user_data(self, user, key, value):
         """
@@ -729,7 +796,7 @@ class MockProfileServer(webservice.UserWebService):
         data['id'] = id(data)
 
         details = self._user_to_dict(user)
-        self.user_data.setdefault(details['email'], []).append(data)
+        self.user_data.setdefault(details['username'], []).append(data)
 
     def delete_user_data(self, id_):
         """
@@ -748,7 +815,7 @@ class MockProfileServer(webservice.UserWebService):
 
         details = self._user_to_dict(user)
         try:
-            data = self.user_data[details['email']]
+            data = self.user_data[details['username']]
 
             if key:
                 data = [record
@@ -811,7 +878,14 @@ def verify_password_request(self, email):
 
     assert isinstance(webservice.profile_server, MockProfileServer)
 
+    username = getattr(webservice.profile_server,
+                       'last_reset_password',
+                       None)
+
+    assert username is not None, \
+        "Password reset has been requested."
+
     assert_equals(
         email,
-        getattr(webservice.profile_server, 'last_reset_password', None),
+        webservice.profile_server.find_by_username(username)['email']
     )

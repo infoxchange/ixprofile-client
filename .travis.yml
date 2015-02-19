@@ -7,3 +7,4 @@ install:
 script:
     - .githooks/pre-commit -f
     - nosetests
+sudo: false
