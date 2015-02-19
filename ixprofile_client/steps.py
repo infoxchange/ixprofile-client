@@ -199,19 +199,8 @@ def confirm_profile_server_users(self):
                   for group in row.get('groups', '').split(',')
                   if group != '']
 
-        # This should be part of ixprofileclient
-        data = {
-            'groups': groups,
-        }
-        # pylint:disable=protected-access
-        headers = {'content-type': 'application/json'}
-        response = requests.patch(
-            webservice.profile_server._detail_uri(user.email),
-            auth=webservice.profile_server.auth,
-            headers=headers,
-            verify=settings.SSL_CA_FILE,
-            data=json.dumps(data))
-        response.raise_for_status()
+        webservice.profile_server.remove_groups(user, details['groups'])
+        webservice.profile_server.add_groups(user, groups)
 
 
 @step(r'I log in to the real profile server with username "([^"]*)" and '
