@@ -119,6 +119,9 @@ def add_profile_server_users(self):
                 subscriptions[app] = True
             row['subscriptions'] = subscriptions
 
+        row['ever_subscribed_websites'] = subscriptions.keys() + \
+            [webservice.profile_server.app]
+
         webservice.profile_server.register(row)
 
 
@@ -451,8 +454,8 @@ class MockProfileServer(webservice.UserWebService):
             'is_locked': (False, False),
             'groups': (False, []),
             'subscribed': (False, False),
-            'subscriptions': (False, {
-            }),
+            'subscriptions': (False, {}),
+            'ever_subscribed_websites': (False, []),
         }
 
         for key, (real, default) in details_fields.items():
@@ -610,6 +613,8 @@ class MockProfileServer(webservice.UserWebService):
         email = self._user_to_dict(user)['email']
 
         self.users[email]['subscriptions'][self.app] = state
+        if state:
+            self.users[email]['ever_subscribed_websites'] += [self.app]
 
     def unsubscribe(self, user):
         """
@@ -706,8 +711,11 @@ class MockProfileServer(webservice.UserWebService):
                 self._raise_failure("Invalid user key: {0}".format(key))
 
         try:
-            self.users[email]['subscriptions'].update(
-                kwargs.pop('subscriptions'))
+            subscriptions = kwargs.pop('subscriptions')
+            self.users[email]['subscriptions'].update(subscriptions)
+            self.users[email]['ever_subscribed_websites'] += \
+                [app for app in subscriptions.keys() if subscriptions[app]]
+
         except KeyError:
             pass
 
