@@ -441,7 +441,7 @@ class MockProfileServer(webservice.UserWebService):
             'last_login': (True, None),
             'is_locked': (False, False),
             'groups': (False, []),
-            'subscribed': (False, False),
+            'subscribed': (False, True),
             'subscriptions': (False, {}),
             'ever_subscribed_websites': (False, []),
         }
@@ -451,9 +451,6 @@ class MockProfileServer(webservice.UserWebService):
                 details[key] = getattr(user, key)
             elif obj_type != User:
                 details[key] = user.get(key, default)
-
-        if not details['username']:
-            details['username'] = cls._generate_username(details)
 
         return details
 
@@ -673,7 +670,9 @@ class MockProfileServer(webservice.UserWebService):
 
         self._check_username(user)
 
-        username = user.get('username', self._generate_username(user))
+        username = user.get('username')
+        if not username:
+            username = user['username'] = self._generate_username(user)
 
         # Remove 'subscribed', all the necessary information is in
         # 'subscriptions'
