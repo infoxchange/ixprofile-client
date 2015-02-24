@@ -4,6 +4,8 @@ Test getting user details in the fake profile server.
 
 from __future__ import absolute_import
 
+from django.contrib.auth.models import User
+
 from ...util import leave_only_keys
 from . import FakeProfileServerTestCase
 
@@ -108,4 +110,26 @@ class UserDetailsTestCase(FakeProfileServerTestCase):
         self.assertEqual(
             self.mock_ps.find_by_username(''),
             None
+        )
+
+    def test_set_details(self):
+        """
+        Test setting a user's details.
+        """
+
+        # Email by itself is not sufficient to update details
+        with self.assertRaises(KeyError):
+            self.mock_ps.set_details(
+                User(email='bob@gov.gl'),
+                first_name='Robert',
+            )
+
+        self.mock_ps.set_details(
+            User(username=self.bob_username),
+            first_name='Robert',
+        )
+
+        self.assertEqual(
+            self.mock_ps.find_by_username(self.bob_username)['first_name'],
+            'Robert',
         )
