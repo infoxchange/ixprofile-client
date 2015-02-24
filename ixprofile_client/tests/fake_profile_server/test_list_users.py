@@ -10,7 +10,7 @@ from ...util import leave_only_keys
 from . import FakeProfileServerTestCase
 
 
-class RemoveGroupsTestCase(FakeProfileServerTestCase):
+class ListUserTestCase(FakeProfileServerTestCase):
     """
     Test listing users in the fake profile server.
     """
@@ -22,7 +22,7 @@ class RemoveGroupsTestCase(FakeProfileServerTestCase):
         Add adminable app and some users to the mock.
         """
 
-        super(RemoveGroupsTestCase, self).setUp()
+        super(ListUserTestCase, self).setUp()
         self.mock_ps.adminable_apps = ('another_app',)
 
         # Subscribed user
@@ -45,6 +45,7 @@ class RemoveGroupsTestCase(FakeProfileServerTestCase):
         # Subscribed to another app
         self.mock_ps.register({
             'email': 'muzzy@stell.ar',
+            'subscribed': False,
             'subscriptions': {
                 'another_app': True,
                 'unrelated': True,
@@ -54,6 +55,7 @@ class RemoveGroupsTestCase(FakeProfileServerTestCase):
         # Completely unrelated
         self.mock_ps.register({
             'email': 'norman@yahoo.uk',
+            'subscribed': False,
             'subscriptions': {
                 'unrelated': True,
             },
