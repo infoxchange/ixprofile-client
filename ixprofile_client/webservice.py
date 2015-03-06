@@ -295,6 +295,13 @@ class UserWebService(object):
         Set the details for the user
         """
 
+        # If `subscribed' is not set but we are changing the status of
+        # the current app, `subscribed' must be set
+        if 'subscribed' not in details and 'subscriptions' in details \
+                and settings.PROFILE_SERVER_KEY in details['subscriptions']:
+            details['subscribed'] = \
+                details['subscriptions'][settings.PROFILE_SERVER_KEY]
+
         response = self._request('PATCH',
                                  self._detail_uri(user.username),
                                  data=json.dumps(details))
