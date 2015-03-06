@@ -778,6 +778,12 @@ class MockProfileServer(webservice.UserWebService):
 
         username = self._user_to_dict(user)['username']
 
+        # If `subscribed' is not set but we are changing the status of
+        # the current app, `subscribed' must be set
+        if 'subscribed' not in kwargs and 'subscriptions' in kwargs \
+                and self.app in kwargs['subscriptions']:
+            kwargs['subscribed'] = kwargs['subscriptions'][self.app]
+
         # 'subscribed' overrides 'subscriptions'
         try:
             subscribed = kwargs.pop('subscribed')
