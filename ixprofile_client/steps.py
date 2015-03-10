@@ -426,10 +426,12 @@ class MockProfileServer(webservice.UserWebService):
     @classmethod
     def _user_to_dict(cls, user):
         """
-        If user is a Django User, convert it to a dict
+        Convert either a Django user or a dict to internal representation.
+
+        In case of a dict, extra keys (like 'subscriptions') that are not
+        present on normal Users will be preserved.
         """
-        details = {}
-        obj_type = type(user)
+
         details_fields = {
             'email': (True, ''),
             'first_name': (True, ''),
@@ -446,13 +448,16 @@ class MockProfileServer(webservice.UserWebService):
             'ever_subscribed_websites': (False, []),
         }
 
-        for key, (real, default) in details_fields.items():
-            if obj_type == User and real:
-                details[key] = getattr(user, key)
-            elif obj_type != User:
-                details[key] = user.get(key, default)
-
-        return details
+        if isinstance(user, dict):
+            return {
+                key: user.get(key, default)
+                for key, (_, default) in details_fields.items()
+            }
+        else:
+            return {
+                key: getattr(user, key) if real else default
+                for key, (real, default) in details_fields.items()
+            }
 
     def find_by_email(self, email):
         """
