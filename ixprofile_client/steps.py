@@ -124,6 +124,26 @@ def add_profile_server_users(self):
         webservice.profile_server.register(row)
 
 
+@step(r'Fake profile server user "([^"]+)" has preferences:')
+def set_preferences(self, email):
+    """
+    Set preferences for a mock profile server user
+    And the fake profile server user "happy@example.com" has preferences:
+        | favourite | {"entity_id": 102, "name": "One"}      |
+        | favourite | {"entity_id": 103, "something": "Two"} |
+    """
+
+    assert isinstance(webservice.profile_server, MockProfileServer)
+
+    user = User(
+        username=webservice.profile_server.find_by_email(email)['username']
+    )
+
+    for preference, value in self.table:
+        value = json.loads(value)
+        webservice.profile_server.set_user_data(user, preference, value)
+
+
 @step('I have multiple users in the fake profile server with email "([^"]*)"')
 def add_nonunique_email(_, email):
     """
