@@ -125,3 +125,17 @@ class TestWebservice(RealProfileServerTestCase):
             self.profile_server._list_uri(a='a', b='b'),
             self.profile_server.profile_server + '/api/v2/user/?a=a&b=b'
         )
+
+    def test_sort_params(self):
+        """
+        Test URLs multiple parameters are correctly generated
+        """
+        # pylint:disable=protected-access
+        actual = self.profile_server._list_uri(order_by=[
+            'first_name',
+            'last_name',
+        ])
+        expected = self.profile_server.profile_server + \
+            '/api/v2/user/?order_by=first_name&order_by=last_name'
+
+        self.assertEquals(actual, expected)
