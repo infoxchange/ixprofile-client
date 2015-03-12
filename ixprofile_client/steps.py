@@ -505,9 +505,6 @@ class MockProfileServer(webservice.UserWebService):
                                 if user['subscriptions'][app]]
         user['ever_subscribed_websites'] += active_subscriptions
 
-        # Current app should always be included.
-        user['ever_subscribed_websites'] += [self.app]
-
         # Get rid of any duplicate entries.
         user['ever_subscribed_websites'] = \
             list(set(user['ever_subscribed_websites']))
