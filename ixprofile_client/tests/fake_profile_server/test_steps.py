@@ -65,7 +65,7 @@ class TestLettuceSteps(object):
                 'golden-condor': False,
                 'solaris': False,
             },
-            'ever_subscribed_websites': ['mock_app'],
+            'ever_subscribed_websites': [],
             'username': 'sha256:ef205ea3e9e71a3a46e2118',
             'first_name': u'Hattie',
             'last_name': u'McDoogal',
@@ -95,7 +95,9 @@ class TestLettuceSteps(object):
                 u'solaris': True,
             },
             'ever_subscribed_websites': [
-                'golden-condor', 'solaris', 'mock_app'
+                'golden-condor',
+                'solaris',
+                'mock_app',
             ],
         }
     }
