@@ -34,7 +34,7 @@ class UserWebService(object):
         The URL for the user list.
         """
         if kwargs:
-            query_string = '?' + urlencode(kwargs)
+            query_string = '?' + urlencode(kwargs, doseq=True)
         else:
             query_string = ''
 
