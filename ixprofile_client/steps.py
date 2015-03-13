@@ -20,7 +20,6 @@ import requests
 import socket
 import urlparse
 from hashlib import sha256
-from operator import itemgetter
 from time import time
 
 from django.conf import settings
@@ -39,6 +38,8 @@ import social.apps.django_app.views
 
 from ixprofile_client import webservice
 from ixprofile_client.exceptions import EmailNotUnique, ProfileServerFailure
+
+from .util import multi_key_sort
 
 # The real profile server, used for integration tests
 RealProfileServer = webservice.profile_server  # pylint:disable=invalid-name
@@ -570,13 +571,12 @@ class MockProfileServer(webservice.UserWebService):
 
         # Default sorting in PS is by ID, do stable sorting by email instead
         # Email is more meaningful than hashed usernames
-        sort_by = kwargs.pop('sort_by', 'email')
-        is_descending = sort_by[0] == '-'
-        if is_descending:
-            sort_by = sort_by[1:]
-        user_list.sort(key=itemgetter(sort_by, 'email'))
-        if is_descending:
-            user_list.reverse()
+        sort_by = kwargs.pop('order_by', 'email')
+
+        if not isinstance(sort_by, list):
+            sort_by = [sort_by]
+
+        user_list = multi_key_sort(user_list, sort_by)
 
         # Filter only subscribed/adminable users, unless searching by email
         if 'email' not in kwargs:
