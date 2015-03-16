@@ -911,7 +911,19 @@ def verify_last_list_call(self):
 
     expected_kwargs = dict((key, value) for (key, value) in self.table)
 
-    assert_equals(expected_kwargs, webservice.profile_server.last_list_kwargs)
+    actual_kwargs = webservice.profile_server.last_list_kwargs.copy()
+
+    for kwargs in (expected_kwargs, actual_kwargs):
+        try:
+            kwargs['order_by'] = [
+                order_by.strip()
+                for order_by
+                in kwargs['order_by'].split(',')
+            ]
+        except (KeyError, AttributeError):
+            pass
+
+    assert_equals(expected_kwargs, actual_kwargs)
 
 
 @step(r'Password reset is requested for "([^"]+)"')
