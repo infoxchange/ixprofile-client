@@ -28,6 +28,7 @@ class UserWebService(object):
     GROUP_URI = "/api/v2/group/%s/"
 
     register_email_template = None
+    register_email_subject = None
 
     def _list_uri(self, **kwargs):
         """
@@ -179,6 +180,8 @@ class UserWebService(object):
 
         if self.register_email_template is not None:
             data['email_template'] = self.register_email_template
+        if self.register_email_subject is not None:
+            data['email_subject'] = self.register_email_subject
         response = self._request('POST', self._list_uri(),
                                  data=json.dumps(data))
         self._raise_for_failure(response)
