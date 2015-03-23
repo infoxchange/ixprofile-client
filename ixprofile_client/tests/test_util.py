@@ -3,7 +3,8 @@ Tests for utility functions
 """
 from unittest import TestCase
 
-from ixprofile_client.util import multi_key_sort
+from ..steps import SORT_RULES
+from ..util import multi_key_sort
 
 
 class MultiKeySortTestCase(TestCase):
@@ -18,11 +19,11 @@ class MultiKeySortTestCase(TestCase):
         self.data = []
 
         for first, last in [
-            ('zzz', 'bbb'),
-            ('ccc', 'fff'),
-            ('hhh', 'bbb'),
-            ('ddd', 'ggg'),
-            ('aaa', 'kkk'),
+            ('Homer', 'Simpson'),
+            ('Marge', 'Simpson'),
+            ('Bart', 'Simpson'),
+            ('Lisa', 'SIMPSON'),
+            ('Maggie', 'Simpson'),
         ]:
             self.data.append({'first_name': first, 'last_name': last})
 
@@ -30,7 +31,7 @@ class MultiKeySortTestCase(TestCase):
         """
         Return first name/last name tuples sorted by the given fields
         """
-        data = multi_key_sort(self.data, fields)
+        data = multi_key_sort(self.data, fields, SORT_RULES)
 
         return [(user['first_name'], user['last_name']) for user in data]
 
@@ -41,11 +42,11 @@ class MultiKeySortTestCase(TestCase):
         data = self._sort('first_name')
 
         self.assertEqual(data, [
-            ('aaa', 'kkk'),
-            ('ccc', 'fff'),
-            ('ddd', 'ggg'),
-            ('hhh', 'bbb'),
-            ('zzz', 'bbb'),
+            ('Bart', 'Simpson'),
+            ('Homer', 'Simpson'),
+            ('Lisa', 'SIMPSON'),
+            ('Maggie', 'Simpson'),
+            ('Marge', 'Simpson'),
         ])
 
     def test_sort_reverse_first_name(self):
@@ -55,11 +56,11 @@ class MultiKeySortTestCase(TestCase):
         data = self._sort('-first_name')
 
         self.assertEqual(data, [
-            ('zzz', 'bbb'),
-            ('hhh', 'bbb'),
-            ('ddd', 'ggg'),
-            ('ccc', 'fff'),
-            ('aaa', 'kkk'),
+            ('Marge', 'Simpson'),
+            ('Maggie', 'Simpson'),
+            ('Lisa', 'SIMPSON'),
+            ('Homer', 'Simpson'),
+            ('Bart', 'Simpson'),
         ])
 
     def test_sort_last_and_first_names(self):
@@ -69,9 +70,9 @@ class MultiKeySortTestCase(TestCase):
         data = self._sort('last_name', 'first_name')
 
         self.assertEqual(data, [
-            ('hhh', 'bbb'),
-            ('zzz', 'bbb'),
-            ('ccc', 'fff'),
-            ('ddd', 'ggg'),
-            ('aaa', 'kkk'),
+            ('Bart', 'Simpson'),
+            ('Homer', 'Simpson'),
+            ('Lisa', 'SIMPSON'),
+            ('Maggie', 'Simpson'),
+            ('Marge', 'Simpson'),
         ])

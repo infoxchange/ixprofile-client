@@ -1,7 +1,7 @@
 """
-Miscelanneous utilities.
+Miscellaneous utilities.
 """
-from operator import itemgetter
+from operator import itemgetter, methodcaller
 
 
 def leave_only_keys(*keys):
@@ -22,14 +22,21 @@ def leave_only_keys(*keys):
     return filtered
 
 
-def multi_key_sort(items, order_by, getter=itemgetter):
+def multi_key_sort(items, order_by, functions=None, getter=itemgetter):
     """
-    Sort a list of dicts objects by multiple keys bidirectionally.
+    Sort a list of dicts or objects by multiple keys bidirectionally.
 
-    To sort dicts, use itemgetter for the getter function
+    To sort dicts, use `itemgetter' for the getter function.
+    To sort objects, use `attrgetter'.
 
-    Allows sorting in the same way as order_by on a Django queryset
+    Pass in a dict of `functions' for advanced sorting rules (see
+    `function_chain').
+
+    Allows sorting in the same way as order_by on a Django queryset: prefix a
+    field with '-' to reverse sorting.
     """
+    functions = functions or {}
+
     comparers = []
 
     for key in order_by:
@@ -40,7 +47,9 @@ def multi_key_sort(items, order_by, getter=itemgetter):
             field = key
             polarity = 1
 
-        comparers.append((getter(field), polarity))
+        func = functions.get(key, getter)
+
+        comparers.append((func(field), polarity))
 
     def comparer(left, right):
         """
@@ -55,3 +64,22 @@ def multi_key_sort(items, order_by, getter=itemgetter):
         return 0
 
     return sorted(items, cmp=comparer)
+
+
+def function_chain(inner_func, *outer_funcs):
+    """
+    Create a single unary function from multiple unary functions
+    """
+    if not outer_funcs:
+        return inner_func
+
+    outer_func = function_chain(*outer_funcs)
+
+    return lambda *args, **kwargs: outer_func(inner_func(*args, **kwargs))
+
+
+def sort_case_insensitive(field, getter=itemgetter):
+    """
+    Create a function chain to get the lowercase version of a field
+    """
+    return function_chain(getter(field), methodcaller('lower'))
