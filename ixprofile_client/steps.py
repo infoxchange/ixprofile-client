@@ -39,10 +39,15 @@ import social.apps.django_app.views
 from ixprofile_client import webservice
 from ixprofile_client.exceptions import EmailNotUnique, ProfileServerFailure
 
-from .util import multi_key_sort
+from .util import multi_key_sort, sort_case_insensitive
 
 # The real profile server, used for integration tests
 RealProfileServer = webservice.profile_server  # pylint:disable=invalid-name
+
+SORT_RULES = {
+    'first_name': sort_case_insensitive,
+    'last_name': sort_case_insensitive,
+}
 
 
 def site_url(url):
@@ -601,7 +606,7 @@ class MockProfileServer(webservice.UserWebService):
         if not isinstance(sort_by, list):
             sort_by = [sort_by]
 
-        user_list = multi_key_sort(user_list, sort_by)
+        user_list = multi_key_sort(user_list, sort_by, SORT_RULES)
 
         # Filter only subscribed/adminable users, unless searching by email
         if 'email' not in kwargs:
