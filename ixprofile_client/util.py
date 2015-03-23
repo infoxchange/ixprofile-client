@@ -29,8 +29,7 @@ def multi_key_sort(items, order_by, functions=None, getter=itemgetter):
     To sort dicts, use `itemgetter' for the getter function.
     To sort objects, use `attrgetter'.
 
-    Pass in a dict of `functions' for advanced sorting rules (see
-    `function_chain').
+    Pass in a dict of `functions' for advanced sorting rules (see `compose').
 
     Allows sorting in the same way as order_by on a Django queryset: prefix a
     field with '-' to reverse sorting.
@@ -66,20 +65,15 @@ def multi_key_sort(items, order_by, functions=None, getter=itemgetter):
     return sorted(items, cmp=comparer)
 
 
-def function_chain(inner_func, *outer_funcs):
+def compose(*functions):
     """
     Create a single unary function from multiple unary functions
     """
-    if not outer_funcs:
-        return inner_func
-
-    outer_func = function_chain(*outer_funcs)
-
-    return lambda *args, **kwargs: outer_func(inner_func(*args, **kwargs))
+    return reduce(lambda f, g: lambda x: f(g(x)), functions)
 
 
 def sort_case_insensitive(field, getter=itemgetter):
     """
     Create a function chain to get the lowercase version of a field
     """
-    return function_chain(getter(field), methodcaller('lower'))
+    return compose(methodcaller('lower'), getter(field))
