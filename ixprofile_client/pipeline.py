@@ -23,16 +23,7 @@ def match_user(strategy, details, response, uid, *args, **kwargs):
     username.
     """
 
-    webservice = ixprofile_client.webservice.profile_server
-
-    # check the user's subscription status
-    email = details['email']
-
-    ws_details = webservice.details(email)
-
-    if not ws_details['subscribed']:
-        return HttpResponseRedirect("/no-user")
-
+    # Check whether the OpenID is coming from the expected server
     profile_server = urlparse(settings.PROFILE_SERVER)
     user_url = urlparse(uid)
 
@@ -44,6 +35,14 @@ def match_user(strategy, details, response, uid, *args, **kwargs):
 
     if match:
         username = urllib.unquote(match.group(1))
+
+        webservice = ixprofile_client.webservice.profile_server
+        ws_details = webservice.find_by_username(username)
+
+        # check the user's subscription status
+        if not ws_details['subscribed']:
+            return HttpResponseRedirect("/no-user")
+
         try:
             # user is known to us
             # pylint:disable=no-member

@@ -12,7 +12,7 @@ settings.configure(
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         }},
     PROFILE_SERVER='dummy_server',
-    PROFILE_SERVER_KEY='dummy_key',
+    PROFILE_SERVER_KEY='mock_app',
     PROFILE_SERVER_SECRET='dummy_secret',
     SSL_CA_FILE=None,
     DEBUG=True)

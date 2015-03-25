@@ -17,8 +17,8 @@ class TestWebservice(RealProfileServerTestCase):
     """
 
     APP = 'ixprofile_client_test'
-    test_email = 'bashful@infoxchange.net.au'
-    user = MagicMock(email=test_email)
+    test_username = 'bashful'
+    user = MagicMock(username=test_username)
 
     @classmethod
     def setUpClass(cls):
@@ -63,20 +63,31 @@ class TestWebservice(RealProfileServerTestCase):
         """
         Test getting user details
         """
-        details = self.profile_server.details(self.test_email)
+        details = self.profile_server.find_by_username(self.test_username)
 
-        assert_in('username', details)
-        assert_in('first_name', details)
-        assert_in('last_name', details)
-        assert_in('email', details)
-        assert_equals(self.test_email, details['email'])
-        assert_in('phone', details)
-        assert_in('mobile', details)
-        assert_in('subscribed', details)
-        assert_in('subscriptions', details)
-        assert_in('state', details)
-        assert_in('groups', details)
-        assert_in('resource_uri', details)
+        assert_equals(self.test_username, details['username'])
+        assert_equals('bashful@infoxchange.net.au', details['email'])
+        self.assert_looks_like_a_user(details)
+
+    def assert_looks_like_a_user(self, obj):
+        """
+        Check that the dictionary looks like a user returned by the profile
+        server.
+        """
+
+        assert_in('username', obj)
+        assert_in('first_name', obj)
+        assert_in('last_name', obj)
+        assert_in('email', obj)
+        assert_in('phone', obj)
+        assert_in('mobile', obj)
+        assert_in('last_login', obj)
+        assert_in('subscribed', obj)
+        assert_in('subscriptions', obj)
+        assert_in('ever_subscribed_websites', obj)
+        assert_in('state', obj)
+        assert_in('groups', obj)
+        assert_in('resource_uri', obj)
 
     def test_get_user_preferences(self):
         """
@@ -92,3 +103,39 @@ class TestWebservice(RealProfileServerTestCase):
                                                              key=self.APP)
 
         assert_equals(total, len(user_preferences))
+
+    def test_list_users(self):
+        """
+        Test listing users.
+        """
+
+        users = self.profile_server.list()
+
+        self.assertGreater(users['meta']['total_count'], 0)
+
+        for obj in users['objects']:
+            self.assert_looks_like_a_user(obj)
+
+    def test_list_users_params(self):
+        """
+        Test listing users with params
+        """
+        # pylint:disable=protected-access
+        self.assertEquals(
+            self.profile_server._list_uri(a='a', b='b'),
+            self.profile_server.profile_server + '/api/v2/user/?a=a&b=b'
+        )
+
+    def test_sort_params(self):
+        """
+        Test URLs multiple parameters are correctly generated
+        """
+        # pylint:disable=protected-access
+        actual = self.profile_server._list_uri(order_by=[
+            'first_name',
+            'last_name',
+        ])
+        expected = self.profile_server.profile_server + \
+            '/api/v2/user/?order_by=first_name&order_by=last_name'
+
+        self.assertEquals(actual, expected)
