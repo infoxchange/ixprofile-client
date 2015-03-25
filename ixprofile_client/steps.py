@@ -391,7 +391,6 @@ class MockProfileServer(webservice.UserWebService):
     def __init__(self):
         self.users = {}
         self.user_data = {}
-        self.groups = {}
 
     @staticmethod
     def _user_to_dict(user):
@@ -481,9 +480,6 @@ class MockProfileServer(webservice.UserWebService):
         user = self.users.setdefault(details['email'], details)
         user['groups'] = list(set(user['groups'] + groups))
 
-        for group in groups:
-            self.groups.setdefault(group, []).append(details['email'])
-
         return user['groups']
 
     def remove_group(self, user, group):
@@ -500,25 +496,14 @@ class MockProfileServer(webservice.UserWebService):
         user = self.users[details['email']]
         user['groups'] = list(set(user.get('groups', [])) - set(groups))
 
-        for group in groups:
-            try:
-                self.groups.setdefault(group, []).remove(details['email'])
-            except ValueError:
-                pass
-
         return user['groups']
 
     def get_group(self, group):
         """
         Get the users for the groups
         """
-
-        try:
-            users = [self.details(email) for email in self.groups[group]]
-        except KeyError:
-            users = []
-
-        return users
+        return dict((k, v) for k, v in self.users.items()
+                    if group in v['groups'])
 
     def set_details(self, user, **kwargs):
         """
