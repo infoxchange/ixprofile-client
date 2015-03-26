@@ -789,8 +789,8 @@ class MockProfileServer(webservice.UserWebService):
         """
         Get the users for the groups
         """
-        return dict((k, v) for k, v in self.users.items()
-                    if group in v['groups'])
+        return [user for user in self.users.values()
+                if group in user['groups']]
 
     def set_details(self, user, **kwargs):
         """
