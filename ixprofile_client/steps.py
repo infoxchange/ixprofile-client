@@ -175,10 +175,15 @@ def no_user_on_profile_server(self):
     """
 
     for row in self.hashes:
-        attr = 'email' if 'email' in row else 'username'
-        details = getattr(webservice.profile_server,
-                          'find_by_%s' % attr)(row[attr])
-        assert not details, "User present: %s" % row[attr]
+        if 'email' in row:
+            key = 'email'
+            func = webservice.profile_server.find_by_email
+        else:
+            key = 'username'
+            func = webservice.profile_server.find_by_username
+
+        details = func(row[key])
+        assert not details, "User present: %s" % row[key]
 
 
 @step(r'The email "([^"]*)" is part of group "([^"]*)" in the (?:real|fake) '
