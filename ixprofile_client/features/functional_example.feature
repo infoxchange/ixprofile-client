@@ -15,6 +15,9 @@ Feature: Integrate with Profile Server
 	    And I do not have users in the fake profile server:
 	      | email                   |
 	      | new_user@profile.server |
+        And I do not have users in the fake profile server:
+          | username  |
+          | new_user  |
 
 
     Scenario: Add a new user
