@@ -625,11 +625,11 @@ class MockProfileServer(webservice.UserWebService):
             if was_subscribed:
                 user_list = [
                     user for user in user_list
-                    if any(user['ever_subscribed_websites']) and
+                    if any([app in user['ever_subscribed_websites']
+                            for app in interesting_apps]) and
                     not any(user['subscriptions'].get(app, False)
                             for app in interesting_apps)
                 ]
-
             else:
                 user_list = [
                     user for user in user_list
