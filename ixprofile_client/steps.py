@@ -621,14 +621,21 @@ class MockProfileServer(webservice.UserWebService):
             else:
                 interesting_apps = (self.app,)
 
-            # TODO: was_subscribed is not supported
-            kwargs.pop('was_subscribed', None)
+            was_subscribed = kwargs.pop('was_subscribed', False)
+            if was_subscribed:
+                user_list = [
+                    user for user in user_list
+                    if any(user['ever_subscribed_websites']) and
+                    not any(user['subscriptions'].get(app, False)
+                            for app in interesting_apps)
+                ]
 
-            user_list = [
-                user for user in user_list
-                if any(user['subscriptions'].get(app, False)
-                       for app in interesting_apps)
-            ]
+            else:
+                user_list = [
+                    user for user in user_list
+                    if any(user['subscriptions'].get(app, False)
+                           for app in interesting_apps)
+                ]
 
         searchable_fields = (
             'email',
