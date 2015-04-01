@@ -792,9 +792,11 @@ class MockProfileServer(webservice.UserWebService):
 
         return user['groups']
 
-    def get_group(self, group):
+    def get_group(self, group, **kwargs):
         """
         Get the users for the groups
+
+        FIXME: Kwargs are ignored
         """
         return [user for user in self.users.values()
                 if group in user['groups']]

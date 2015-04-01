@@ -222,7 +222,7 @@ class UserWebService(object):
         )
         self._raise_for_failure(response)
 
-    def get_group(self, group):
+    def get_group(self, group, **kwargs):
         """
         Request the users in a profile server group
 
@@ -236,7 +236,8 @@ class UserWebService(object):
 
         LOG.debug("Requesting users for group '%s'", url)
 
-        response = self._request('GET', url)
+        response = self._request('GET', url,
+                                 params=kwargs)
 
         # pylint:disable=no-member
         # Instance of 'LookupDict' has no 'not_found' member
