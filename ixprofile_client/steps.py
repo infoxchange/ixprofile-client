@@ -28,7 +28,7 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.timezone import now
 from lettuce import before, step, world
-from lettuce.django import server
+from lettuce import django as lettuce_django
 from lettuce.django.steps.models import hashes_data
 # pylint:disable=no-name-in-module
 from nose.tools import assert_equals, assert_in, assert_not_in
@@ -57,8 +57,8 @@ def site_url(url):
 
     base_url = 'http://%s' % socket.gethostname()
 
-    if server.port is not 80:
-        base_url += ':%d' % server.port
+    if lettuce_django.server.port is not 80:
+        base_url += ':%d' % lettuce_django.server.port
 
     return urlparse.urljoin(base_url, url)
 
