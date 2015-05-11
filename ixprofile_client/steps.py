@@ -1,5 +1,5 @@
 """
-Profile Server lettuce steps
+Profile Server Gherkin steps
 
 Import these steps in your features/steps/__init__.py file:
     import ixprofile_client.steps
@@ -17,7 +17,6 @@ from __future__ import division
 import json
 import math
 import requests
-import socket
 import urlparse
 from hashlib import sha256
 from time import time
@@ -27,9 +26,9 @@ from django.contrib.auth import get_backends, login
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.timezone import now
-from lettuce import before, step, world
-from lettuce import django as lettuce_django
-from lettuce.django.steps.models import hashes_data
+
+from aloe import before, step, world
+from aloe_django.steps.models import hashes_data
 # pylint:disable=no-name-in-module
 from nose.tools import assert_equals, assert_in, assert_not_in
 from selenium.webdriver.support.ui import WebDriverWait
@@ -50,36 +49,35 @@ SORT_RULES = {
 }
 
 
-def site_url(url):
+def site_url(self, url):
     """
     Determine the server URL.
     """
 
-    base_url = 'http://%s' % socket.gethostname()
-
-    if lettuce_django.server.port is not 80:
-        base_url += ':%d' % lettuce_django.server.port
+    # TODO: live_server_url is a property, need to call it on the class
+    testclass = self.testclass
+    base_url = testclass.live_server_url.__get__(testclass)
 
     return urlparse.urljoin(base_url, url)
 
 
-def _visit_url_wrapper(lettuce_step, url):
+def _visit_url_wrapper(self, url):
     """
     Wrapper around the 'I visit ""' step to catch profile server failures
     """
     try:
-        lettuce_step.given('I visit "%s"' % url)
+        self.given('I visit "%s"' % url)
     except AuthException:
         # Catch exception when Profile Server is not found
         pass
 
 
 @step(r'I visit site page "([^"]*)"')
-def visit_page(lettuce_step, page):
+def visit_page(self, page):
     """
     Visit a page of the site
     """
-    _visit_url_wrapper(lettuce_step, site_url(page))
+    _visit_url_wrapper(self, site_url(self, page))
 
 
 @step('The app is named "([^"]+)" in the fake profile server')

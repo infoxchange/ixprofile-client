@@ -6,7 +6,7 @@ from __future__ import absolute_import
 
 import os
 
-from lettuce.core import Feature
+from aloe.runner import Runner
 from mock import MagicMock
 # pylint:disable=no-name-in-module
 from nose.tools import assert_equals
@@ -18,6 +18,7 @@ from ... import webservice
 original_profile_server = webservice.profile_server
 
 feature1_filename = os.path.join(os.path.dirname(__file__),
+                                 'test_features',
                                  'test_feature.feature')
 with open(feature1_filename) as feature1_file:
     FEATURE1 = feature1_file.read()
@@ -155,7 +156,8 @@ class TestLettuceSteps(object):
         Test adding users to the fake profile server
         """
 
-        Feature.from_string(FEATURE1).run()
+        Runner(exit=False,
+               argv=['aloe', feature1_filename])
 
         webservice.profile_server.adminable_apps = (
             'golden-condor',

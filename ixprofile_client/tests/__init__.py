@@ -6,7 +6,7 @@ import django
 
 from django.conf import settings
 
-# Configure Django it is required by some of the lettuce steps
+# Configure Django as required by some of the Gherkin steps
 settings.configure(
     CACHES={'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
