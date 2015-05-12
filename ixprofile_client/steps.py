@@ -369,7 +369,7 @@ def create_login_cookie(self, email, minutes):
     auth_handler.login_as_user(user)
 
     webservice.profile_server.set_details(
-        user, last_login=user.last_login.isoformat())
+        user, last_login=user.last_login)
 
     self.given('I visit site page ""')
     self.given('I left my computer for {0} minutes'.format(minutes))
@@ -530,6 +530,8 @@ class MockProfileServer(webservice.UserWebService):
             for app in self._visible_apps()
         }
         user['subscribed'] = user['subscriptions'][self.app]
+        if user['last_login']:
+            user['last_login'] = user['last_login'].isoformat()
         self._update_ever_subscribed_websites(user)
         return user
 
