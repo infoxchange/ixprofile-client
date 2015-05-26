@@ -37,8 +37,7 @@ import social.apps.django_app.views
 
 from ixprofile_client import webservice
 from ixprofile_client.exceptions import EmailNotUnique, ProfileServerFailure
-
-from .util import multi_key_sort, sort_case_insensitive
+from ixprofile_client.util import multi_key_sort, sort_case_insensitive
 
 # The real profile server, used for integration tests
 RealProfileServer = webservice.profile_server  # pylint:disable=invalid-name
