@@ -24,7 +24,7 @@ import math
 import requests
 from hashlib import sha256
 from time import time
-from urllib.parse import urljoin
+from urllib.parse import urljoin  # pylint:disable=import-error
 
 from django.conf import settings
 from django.contrib.auth import get_backends, login
@@ -704,7 +704,8 @@ class MockProfileServer(webservice.UserWebService):
         Generate a username for a user.
         """
 
-        return 'sha256:' + sha256(user['email'].lower()).hexdigest()[:23]
+        hash_base = user['email'].lower().encode()
+        return 'sha256:' + sha256(hash_base).hexdigest()[:23]
 
     def register(self, user):
         """

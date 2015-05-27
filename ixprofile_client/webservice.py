@@ -12,7 +12,7 @@ standard_library.install_aliases()
 import json
 import warnings
 from logging import getLogger
-from urllib.parse import urljoin
+from urllib.parse import urljoin  # pylint:disable=import-error
 
 import requests
 

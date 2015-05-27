@@ -95,8 +95,8 @@ class TestLettuceSteps(FeatureTest):
             },
             'ever_subscribed_websites': [
                 'golden-condor',
-                'solaris',
                 'mock_app',
+                'solaris',
             ],
         }
     }
@@ -105,8 +105,9 @@ class TestLettuceSteps(FeatureTest):
         """
         Return the expected details for the given email
         """
-        new_details = dict(self.default_details.items() +
-                           self.expected_users[email].items())
+        new_details = {}
+        new_details.update(self.default_details)
+        new_details.update(self.expected_users[email])
         new_details['email'] = email
 
         if new_details['subscribed']:
@@ -163,5 +164,8 @@ class TestLettuceSteps(FeatureTest):
 
         for email in self.expected_users.keys():
             stored = webservice.profile_server.find_by_email(email)
+
+            # For stable comparison
+            stored['ever_subscribed_websites'].sort()
 
             assert_equals(self.details_for(email), stored)

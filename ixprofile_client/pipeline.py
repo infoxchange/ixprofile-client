@@ -10,7 +10,7 @@ from future import standard_library
 standard_library.install_aliases()
 
 import re
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote, urlparse  # pylint:disable=import-error
 
 from django.conf import settings
 from django.contrib.auth.models import User

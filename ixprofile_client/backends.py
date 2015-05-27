@@ -9,7 +9,7 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
-from urllib.parse import urljoin
+from urllib.parse import urljoin  # pylint:disable=import-error
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
