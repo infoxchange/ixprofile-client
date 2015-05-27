@@ -12,14 +12,19 @@ profile server.
 
 """
 
+from __future__ import unicode_literals
+from __future__ import print_function
 from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
 
 import json
 import math
 import requests
-import urlparse
 from hashlib import sha256
 from time import time
+from urllib.parse import urljoin
 
 from django.conf import settings
 from django.contrib.auth import get_backends, login
@@ -57,7 +62,7 @@ def site_url(self, url):
     testclass = self.testclass
     base_url = testclass.live_server_url.__get__(testclass)
 
-    return urlparse.urljoin(base_url, url)
+    return urljoin(base_url, url)
 
 
 def _visit_url_wrapper(self, url):

@@ -2,9 +2,15 @@
 django-socialauth pipeline part for IX Profile server
 """
 
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+
 import re
-import urllib
-from urlparse import urlparse
+from urllib.parse import unquote, urlparse
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -34,7 +40,7 @@ def match_user(strategy, details, response, uid, *args, **kwargs):
     match = re.match('^/id/u/(.+)$', user_url.path)
 
     if match:
-        username = urllib.unquote(match.group(1))
+        username = unquote(match.group(1))
 
         webservice = ixprofile_client.webservice.profile_server
         ws_details = webservice.find_by_username(username)

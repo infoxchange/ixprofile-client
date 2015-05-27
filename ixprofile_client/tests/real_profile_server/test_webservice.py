@@ -2,7 +2,15 @@
 Test webservice
 """
 
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
 from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+# pylint:disable=redefined-builtin
+from builtins import range
+# pylint:enable=redefined-builtin
 
 from mock import MagicMock
 # pylint:disable=no-name-in-module
@@ -44,7 +52,7 @@ class TestWebservice(RealProfileServerTestCase):
         """
         Push user preferences
         """
-        for num in xrange(total):
+        for num in range(total):
             self.profile_server.set_user_data(
                 self.user,
                 self.APP,

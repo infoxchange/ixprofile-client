@@ -1,6 +1,12 @@
 """
 Miscellaneous utilities.
 """
+
+try:
+    reduce
+except NameError:
+    from functools import reduce
+
 from operator import itemgetter, methodcaller
 
 
@@ -56,9 +62,11 @@ def multi_key_sort(items, order_by, functions=None, getter=itemgetter):
         polarities
         """
         for func, polarity in comparers:
-            result = cmp(func(left), func(right))
-            if result:
-                return polarity * result
+            leftval, rightval = func(left), func(right)
+            if leftval < rightval:
+                return -polarity
+            if leftval > rightval:
+                return polarity
 
         return 0
 
