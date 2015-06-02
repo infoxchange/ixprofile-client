@@ -6,6 +6,8 @@ from __future__ import absolute_import
 
 import os
 
+from django.utils.timezone import now
+from freezegun import freeze_time
 from lettuce.core import Feature
 from mock import MagicMock
 # pylint:disable=no-name-in-module
@@ -23,6 +25,7 @@ with open(feature1_filename) as feature1_file:
     FEATURE1 = feature1_file.read()
 
 
+@freeze_time('2015-01-01')
 class TestLettuceSteps(object):
     """
     Test Lettuce Steps
@@ -123,6 +126,8 @@ class TestLettuceSteps(object):
         self.mock_step = MagicMock()
         self.mock_scenario = MagicMock()
         self.mock_outline = MagicMock()
+
+        self.default_details['date_joined'] = now().isoformat()
 
     # pylint:disable=invalid-name
     def test_initialise_real_profile_server(self):
