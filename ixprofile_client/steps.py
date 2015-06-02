@@ -472,6 +472,7 @@ class MockProfileServer(webservice.UserWebService):
             'phone': (False, ''),
             'mobile': (False, ''),
             'state': (False, ''),
+            'date_joined': (True, now()),
             'last_login': (True, None),
             'is_locked': (False, False),
             'groups': (False, []),
@@ -530,8 +531,12 @@ class MockProfileServer(webservice.UserWebService):
             for app in self._visible_apps()
         }
         user['subscribed'] = user['subscriptions'][self.app]
-        if user['last_login']:
-            user['last_login'] = user['last_login'].isoformat()
+
+        # Date fields are strings in JSON
+        for field in ('date_joined', 'last_login'):
+            if user[field]:
+                user[field] = user[field].isoformat()
+
         self._update_ever_subscribed_websites(user)
         return user
 
