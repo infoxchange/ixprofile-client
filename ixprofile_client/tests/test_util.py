@@ -3,7 +3,7 @@ Tests for utility functions
 """
 from unittest import TestCase
 
-from ixprofile_client.testing import SORT_RULES
+from ixprofile_client.mock import SORT_RULES
 from ixprofile_client.util import multi_key_sort
 
 

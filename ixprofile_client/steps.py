@@ -35,7 +35,7 @@ from social.exceptions import AuthException
 import social.apps.django_app.views
 
 from ixprofile_client import webservice
-from ixprofile_client.testing import (
+from ixprofile_client.mock import (
     mock_profile_server,
     MockProfileServer,
     unmock_profile_server,
