@@ -3,8 +3,8 @@ Tests for utility functions
 """
 from unittest import TestCase
 
-from ..steps import SORT_RULES
-from ..util import multi_key_sort
+from ixprofile_client.testing import SORT_RULES
+from ixprofile_client.util import multi_key_sort
 
 
 class MultiKeySortTestCase(TestCase):
