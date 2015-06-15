@@ -4,7 +4,7 @@ Forms for editing the users backed by the profile server.
 from django import forms
 from django.contrib.auth.models import User
 
-from ixprofile_client.webservice import profile_server
+from ixprofile_client import webservice
 
 # pylint:disable=old-style-class,super-on-old-class
 # Forms are new style classes
@@ -15,10 +15,6 @@ class UserFormBase(forms.ModelForm):
     A form for creating or editing users with hashed email as username and a
     disabled password.
     """
-
-    def __init__(self, *args, **kwargs):
-        super(UserFormBase, self).__init__(*args, **kwargs)
-        self.user_ws = profile_server
 
     class Meta:
         """
@@ -58,7 +54,7 @@ class UserCreationForm(UserFormBase):
         Create the user, registering them on the profile server.
         """
         user = super(UserCreationForm, self).save(commit=False)
-        self.user_ws.connect(user, commit=False)
+        webservice.profile_server.connect(user, commit=False)
         if commit:
             user.save()
         return user
@@ -78,9 +74,9 @@ class UserChangeForm(UserFormBase):
         """
         user = super(UserChangeForm, self).save(commit=False)
         if user.is_active:
-            self.user_ws.subscribe(user)
+            webservice.profile_server.subscribe(user)
         else:
-            self.user_ws.unsubscribe(user)
+            webservice.profile_server.unsubscribe(user)
         if commit:
             user.save()
         return user
