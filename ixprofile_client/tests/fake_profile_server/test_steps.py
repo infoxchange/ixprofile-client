@@ -20,7 +20,7 @@ from ... import webservice
 original_profile_server = webservice.profile_server
 
 feature1_filename = os.path.join(os.path.dirname(__file__),
-                                 'test_features',
+                                 'features',
                                  'test_feature.feature')
 
 
