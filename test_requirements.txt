@@ -1,6 +1,8 @@
 aloe
 aloe_django
 -e git://github.com/koterpillar/lettuce_webdriver.git@b4250eb5cde4869907e65610dc06783ddc4eb22f#egg=lettuce_webdriver-aloe
+astroid <= 1.3.4
+freezegun
 mock
 nose
 pep8

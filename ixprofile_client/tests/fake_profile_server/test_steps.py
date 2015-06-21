@@ -6,7 +6,9 @@ from __future__ import absolute_import
 
 import os
 
+from django.utils.timezone import now
 from aloe.testing import FeatureTest
+from freezegun import freeze_time
 from mock import MagicMock
 # pylint:disable=no-name-in-module
 from nose.tools import assert_equals
@@ -22,6 +24,7 @@ feature1_filename = os.path.join(os.path.dirname(__file__),
                                  'test_feature.feature')
 
 
+@freeze_time('2015-01-01')
 class TestLettuceSteps(FeatureTest):
     """
     Test Lettuce Steps
@@ -123,6 +126,8 @@ class TestLettuceSteps(FeatureTest):
         self.mock_step = MagicMock()
         self.mock_scenario = MagicMock()
         self.mock_outline = MagicMock()
+
+        self.default_details['date_joined'] = now().isoformat()
 
     # pylint:disable=invalid-name
     def test_initialise_real_profile_server(self):

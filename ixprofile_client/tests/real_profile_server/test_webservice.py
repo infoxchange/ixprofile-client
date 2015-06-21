@@ -89,6 +89,7 @@ class TestWebservice(RealProfileServerTestCase):
         assert_in('email', obj)
         assert_in('phone', obj)
         assert_in('mobile', obj)
+        assert_in('date_joined', obj)
         assert_in('last_login', obj)
         assert_in('subscribed', obj)
         assert_in('subscriptions', obj)
