@@ -176,7 +176,7 @@ class MockProfileServer(webservice.UserWebService):
 
         response = requests.Response()
         # pylint:disable=protected-access
-        response._content = content
+        response._content = content.encode()
         response.status_code = 400
 
         return response
