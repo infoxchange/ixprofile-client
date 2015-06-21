@@ -10,6 +10,7 @@ from future import standard_library
 standard_library.install_aliases()
 
 import inspect
+import sys
 import urllib.request
 
 from openid.fetchers import Urllib2Fetcher
@@ -28,7 +29,8 @@ class SettingsAwareFetcher(Urllib2Fetcher):
         """
 
         # Old versions of urllib2 cannot verify certificates
-        if 'cafile' in inspect.getargspec(urllib.request.urlopen).args:
+        if sys.version_info >= (3, 0) or \
+                'cafile' in inspect.getargspec(urllib.request.urlopen).args:
             from django.conf import settings
             if hasattr(settings, 'SSL_CA_FILE'):
                 kwargs['cafile'] = settings.SSL_CA_FILE
