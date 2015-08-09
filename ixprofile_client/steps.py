@@ -31,7 +31,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.timezone import now
 
 from aloe import before, step, world
-from aloe_django.steps.models import hashes_data
+from aloe.tools import guess_types
+
 # pylint:disable=no-name-in-module
 from nose.tools import assert_equals, assert_in, assert_not_in
 from selenium.webdriver.support.ui import WebDriverWait
@@ -110,7 +111,7 @@ def add_profile_server_users(self):
 
     assert isinstance(webservice.profile_server, MockProfileServer)
 
-    for row in hashes_data(self):
+    for row in guess_types(self.hashes):
         row['groups'] = [group.strip()
                          for group in row.get('groups', '').split(',')
                          if group != '']
@@ -207,7 +208,7 @@ def confirm_profile_server_users(self):
     Confirm users exist in the profile server
     """
 
-    for row in hashes_data(self):
+    for row in guess_types(self.hashes):
         details = webservice.profile_server.find_by_email(row['email'])
         assert details, "Could not find user: %s" % row['email']
 
