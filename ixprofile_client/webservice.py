@@ -313,6 +313,10 @@ class UserWebService(object):
             details['subscribed'] = \
                 details['subscriptions'][settings.PROFILE_SERVER_KEY]
 
+        for field in ('date_joined', 'last_login'):
+            if details.get(field):
+                details[field] = details[field].isoformat()
+
         response = self._request('PATCH',
                                  self._detail_uri(user.username),
                                  data=json.dumps(details))
