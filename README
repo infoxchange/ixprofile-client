@@ -45,6 +45,9 @@ AUTHENTICATION_BACKENDS = (
     # any other backends you might want; default ModelBackend is not needed
 )
 
+# If using Django < 1.7, include:
+from ixprofile_client import SOCIAL_AUTH_PIPELINE
+
 In urls.py, include the following:
 
 url(r'', include('ixprofile_client.urls'))
