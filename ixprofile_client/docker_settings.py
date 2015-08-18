@@ -2,6 +2,9 @@
 Standard config for loading profiles server settings from Docker
 """
 
+from __future__ import unicode_literals, absolute_import
+from future.builtins import *
+
 import os
 
 from furl import furl
@@ -17,11 +20,11 @@ if 'PROFILE_SERVER_URL' in os.environ:
     # Set key and secret, then remove from profiles URL
     # pylint:disable=invalid-name
     _profile_server_url = furl(os.environ.get('PROFILE_SERVER_URL'))
-    PROFILE_SERVER_KEY = _profile_server_url.username
-    PROFILE_SERVER_SECRET = _profile_server_url.password
+    PROFILE_SERVER_KEY = str(_profile_server_url.username)
+    PROFILE_SERVER_SECRET = str(_profile_server_url.password)
 
     _profile_server_url.remove(username=True, password=True)
-    PROFILE_SERVER = _profile_server_url.url
+    PROFILE_SERVER = str(_profile_server_url.url)
 
 
 # Make OpenID module trust the proper certificates
