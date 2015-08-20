@@ -1,5 +1,5 @@
 """
-Profile Server lettuce steps
+Profile Server Gherkin steps
 
 Import these steps in your features/steps/__init__.py file:
     import ixprofile_client.steps
@@ -12,22 +12,27 @@ profile server.
 
 """
 
+from __future__ import unicode_literals
+from __future__ import print_function
 from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
 
 import json
 import math
-import socket
-import urlparse
 from time import time
+from urllib.parse import urljoin  # pylint:disable=import-error
 
 from django.conf import settings
 from django.contrib.auth import get_backends, login
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.timezone import now
-from lettuce import before, step, world
-from lettuce import django as lettuce_django
-from lettuce.django.steps.models import hashes_data
+
+from aloe import before, step, world
+from aloe.tools import guess_types
+
 # pylint:disable=no-name-in-module
 from nose.tools import assert_equals, assert_in, assert_not_in
 from selenium.webdriver.support.ui import WebDriverWait
@@ -42,36 +47,35 @@ from ixprofile_client.mock import (
 )
 
 
-def site_url(url):
+def site_url(self, url):
     """
     Determine the server URL.
     """
 
-    base_url = 'http://%s' % socket.gethostname()
+    # TODO: live_server_url is a property, need to call it on the class
+    testclass = self.testclass
+    base_url = testclass.live_server_url.__get__(testclass)
 
-    if lettuce_django.server.port is not 80:
-        base_url += ':%d' % lettuce_django.server.port
-
-    return urlparse.urljoin(base_url, url)
+    return urljoin(base_url, url)
 
 
-def _visit_url_wrapper(lettuce_step, url):
+def _visit_url_wrapper(self, url):
     """
     Wrapper around the 'I visit ""' step to catch profile server failures
     """
     try:
-        lettuce_step.given('I visit "%s"' % url)
+        self.given('I visit "%s"' % url)
     except AuthException:
         # Catch exception when Profile Server is not found
         pass
 
 
 @step(r'I visit site page "([^"]*)"')
-def visit_page(lettuce_step, page):
+def visit_page(self, page):
     """
     Visit a page of the site
     """
-    _visit_url_wrapper(lettuce_step, site_url(page))
+    _visit_url_wrapper(self, site_url(self, page))
 
 
 @step('The app is named "([^"]+)" in the fake profile server')
@@ -107,7 +111,7 @@ def add_profile_server_users(self):
 
     assert isinstance(webservice.profile_server, MockProfileServer)
 
-    for row in hashes_data(self):
+    for row in guess_types(self.hashes):
         row['groups'] = [group.strip()
                          for group in row.get('groups', '').split(',')
                          if group != '']
@@ -204,7 +208,7 @@ def confirm_profile_server_users(self):
     Confirm users exist in the profile server
     """
 
-    for row in hashes_data(self):
+    for row in guess_types(self.hashes):
         details = webservice.profile_server.find_by_email(row['email'])
         assert details, "Could not find user: %s" % row['email']
 

@@ -2,6 +2,16 @@
 A management command to create a user with a given email.
 """
 
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+# pylint:disable=redefined-builtin
+from builtins import input
+# pylint:enable=redefined-builtin
+from future import standard_library
+standard_library.install_aliases()
+
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -33,7 +43,7 @@ class Command(BaseCommand):
         verbosity = int(options.get('verbosity', 1))
 
         if interactive and not email:
-            email = raw_input("Email: ")
+            email = input("Email: ")
         if not email:
             raise CommandError("No email given.")
 
