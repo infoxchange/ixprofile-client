@@ -6,12 +6,18 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
-from future import standard_library
-standard_library.install_aliases()
 
 import inspect
 import sys
-import urllib.request
+
+PY3 = sys.version_info >= (3, 0)
+
+# Important: python3-open uses urllib.request, whereas (python2) openid uses
+# urllib2. You cannot use the compatibility layer here.
+if PY3:
+    from urllib.request import urlopen
+else:
+    from urllib2 import urlopen
 
 from openid.fetchers import Urllib2Fetcher
 
@@ -29,10 +35,9 @@ class SettingsAwareFetcher(Urllib2Fetcher):
         """
 
         # Old versions of urllib2 cannot verify certificates
-        if sys.version_info >= (3, 0) or \
-                'cafile' in inspect.getargspec(urllib.request.urlopen).args:
+        if PY3 or 'cafile' in inspect.getargspec(urlopen).args:
             from django.conf import settings
             if hasattr(settings, 'SSL_CA_FILE'):
                 kwargs['cafile'] = settings.SSL_CA_FILE
 
-        return urllib.request.urlopen(*args, **kwargs)
+        return urlopen(*args, **kwargs)
