@@ -16,7 +16,7 @@ with open('requirements.txt') as requirements, \
         packages=find_packages(),
         license='MIT',
         description='IX Profile Server client',
-        long_description=open('README').read(),
+        long_description=open('README.md').read(),
         install_requires=requirements.read().splitlines(),
         test_requires=test_requirements.read().splitlines(),
     )
