@@ -13,6 +13,7 @@ with open('requirements.txt') as requirements, \
         version='1.0.0',
         author='Infoxchange dev team',
         author_email='devs@infoxchange.org',
+        url='http://pypi.python.org/pypi/ixprofile-client/',
         packages=find_packages(),
         license='MIT',
         description='IX Profile Server client',
