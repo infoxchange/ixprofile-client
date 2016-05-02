@@ -2,24 +2,19 @@
 An OpenID URL fetcher respecting the settings.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import inspect
 import sys
 
-PY3 = sys.version_info >= (3, 0)
-
-# Important: python3-open uses urllib.request, whereas (python2) openid uses
-# urllib2. You cannot use the compatibility layer here.
-if PY3:
+try:
     from urllib.request import urlopen
-else:
-    from urllib2 import urlopen
+except ImportError:
+    from urllib2 import urlopen  # pylint:disable=import-error
 
 from openid.fetchers import Urllib2Fetcher
+
+PY3 = sys.version_info >= (3, 0)
 
 
 class SettingsAwareFetcher(Urllib2Fetcher):
@@ -35,6 +30,7 @@ class SettingsAwareFetcher(Urllib2Fetcher):
         """
 
         # Old versions of urllib2 cannot verify certificates
+        # pylint:disable=deprecated-method
         if PY3 or 'cafile' in inspect.getargspec(urlopen).args:
             from django.conf import settings
             if hasattr(settings, 'SSL_CA_FILE'):

@@ -130,7 +130,7 @@ class TestWebservice(RealProfileServerTestCase):
         Test listing users with params
         """
         # pylint:disable=protected-access
-        self.assertEquals(
+        self.assertEqual(
             self.profile_server._list_uri(a='a', b='b'),
             self.profile_server.profile_server + '/api/v2/user/?a=a&b=b'
         )
@@ -147,4 +147,4 @@ class TestWebservice(RealProfileServerTestCase):
         expected = self.profile_server.profile_server + \
             '/api/v2/user/?order_by=first_name&order_by=last_name'
 
-        self.assertEquals(actual, expected)
+        self.assertEqual(actual, expected)

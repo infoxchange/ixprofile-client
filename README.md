@@ -1,13 +1,13 @@
-==============
-IXProfileClient
-==============
+# IXProfileClient
+
+[![Build Status](https://travis-ci.org/infoxchange/ixprofile-client.svg?branch=master)](https://travis-ci.org/infoxchange/ixprofile-client)
+[![Coverage Status](https://coveralls.io/repos/github/infoxchange/ixprofile-client/badge.svg)](https://coveralls.io/github/infoxchange/ixprofile-client)
 
 Library package for Django applications using the IX Profiles server for
 authentication and user management.
 
 
-Functionality
--------------
+## Functionality
 
 * Logging in is managed by the profile server. Users are redirected to its
   login page for logging in.
@@ -18,11 +18,11 @@ Functionality
   is_active flag subscribes and unsubscribes them from the application.
 
 
-Usage
------
+## Usage
 
 To connect to the profile server, the following settings should be configured:
 
+```
 # The URL of the profile server to use.
 PROFILE_SERVER = 'https://profiles.somewhere/'
 
@@ -44,10 +44,14 @@ AUTHENTICATION_BACKENDS = (
     'ixprofile_client.backends.IXProfile',
     # any other backends you might want; default ModelBackend is not needed
 )
+```
 
-# If using Django < 1.7, include:
+If using Django < 1.7, include:
+
+```
 from ixprofile_client import SOCIAL_AUTH_PIPELINE
 
 In urls.py, include the following:
 
 url(r'', include('ixprofile_client.urls'))
+```

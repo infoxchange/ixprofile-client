@@ -1,9 +1,10 @@
 """
 Standard config for loading profiles server settings from Docker
 """
-
+# pylint:disable=redefined-builtin,unused-wildcard-import
 from __future__ import unicode_literals, absolute_import
 from future.builtins import *
+# pylint:enable=redefined-builtin,unused-wildcard-import
 
 import os
 

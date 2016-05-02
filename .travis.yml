@@ -1,11 +1,26 @@
 language: python
 python:
     - "2.7"
+    - "3.3"
     - "3.4"
+    - "3.5"
+env:
+    - DJANGO="django>=1.7,<1.8"
+    - DJANGO="django>=1.8,<1.9"
+    - DJANGO="django>=1.9,<1.10"
+matrix:
+    exclude:
+        - python: "3.5"
+          env: DJANGO="django>=1.7,<1.8"
+        - python: "3.3"
+          env: DJANGO="django>=1.9,<1.10"
 install:
+    - pip install $DJANGO
     - pip install -r requirements.txt
     - pip install -r test_requirements.txt
 script:
     - .githooks/pre-commit -f
-    - nosetests
+    - nosetests --with-coverage --cover-package=ixprofile_client
 sudo: false
+after_success:
+    coveralls

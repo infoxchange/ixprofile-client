@@ -1,9 +1,11 @@
 """
 Middleware specific to ixprofile_client
 """
+from __future__ import absolute_import, unicode_literals
 
-from ixprofile_client.exceptions import EmailNotUnique
 from django.template.response import SimpleTemplateResponse
+
+from .exceptions import EmailNotUnique
 
 
 class PrintEmailNotUniqueMessage(object):
