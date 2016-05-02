@@ -78,6 +78,10 @@ class ListUserTestCase(FakeProfileServerTestCase):
             map(filter_interesting, users['objects']),
             key=itemgetter('email'))
 
+        # For stable comparison
+        for user in user_list:
+            user['ever_subscribed_websites'].sort()
+
         self.assertEqual(user_list, [
             {
                 'email': 'bob@gov.gl',
@@ -96,7 +100,9 @@ class ListUserTestCase(FakeProfileServerTestCase):
                     'another_app': True,
                 },
                 'ever_subscribed_websites': [
-                    'mock_app', 'unrelated', 'another_app'
+                    'another_app',
+                    'mock_app',
+                    'unrelated',
                 ]
             },
         ])

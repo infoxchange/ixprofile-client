@@ -7,8 +7,8 @@ from __future__ import absolute_import
 import os
 
 from django.utils.timezone import now
+from aloe.testing import FeatureTest
 from freezegun import freeze_time
-from lettuce.core import Feature
 from mock import MagicMock
 # pylint:disable=no-name-in-module
 from nose.tools import assert_equals
@@ -20,13 +20,12 @@ from ... import webservice
 original_profile_server = webservice.profile_server
 
 feature1_filename = os.path.join(os.path.dirname(__file__),
+                                 'features',
                                  'test_feature.feature')
-with open(feature1_filename) as feature1_file:
-    FEATURE1 = feature1_file.read()
 
 
 @freeze_time('2015-01-01')
-class TestLettuceSteps(object):
+class TestLettuceSteps(FeatureTest):
     """
     Test Lettuce Steps
     """
@@ -99,8 +98,8 @@ class TestLettuceSteps(object):
             },
             'ever_subscribed_websites': [
                 'golden-condor',
-                'solaris',
                 'mock_app',
+                'solaris',
             ],
         }
     }
@@ -109,8 +108,9 @@ class TestLettuceSteps(object):
         """
         Return the expected details for the given email
         """
-        new_details = dict(self.default_details.items() +
-                           self.expected_users[email].items())
+        new_details = {}
+        new_details.update(self.default_details)
+        new_details.update(self.expected_users[email])
         new_details['email'] = email
 
         if new_details['subscribed']:
@@ -160,7 +160,7 @@ class TestLettuceSteps(object):
         Test adding users to the fake profile server
         """
 
-        Feature.from_string(FEATURE1).run()
+        self.assert_feature_success(feature1_filename)
 
         webservice.profile_server.adminable_apps = (
             'golden-condor',
@@ -169,5 +169,8 @@ class TestLettuceSteps(object):
 
         for email in self.expected_users.keys():
             stored = webservice.profile_server.find_by_email(email)
+
+            # For stable comparison
+            stored['ever_subscribed_websites'].sort()
 
             assert_equals(self.details_for(email), stored)

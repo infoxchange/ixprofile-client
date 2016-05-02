@@ -1,8 +1,8 @@
-# astroid 1.3.5 and 1.3.6 cause Pylint to crash
+aloe
+aloe_django
+-e git://github.com/koterpillar/lettuce_webdriver.git@b4250eb5cde4869907e65610dc06783ddc4eb22f#egg=lettuce_webdriver-aloe
 astroid <= 1.3.4
 freezegun
--e git://github.com/infoxchange/lettuce.git@c97ad815ec2027e9f204ccd6362458f63c296402#egg=lettuce-dev
--e git://github.com/infoxchange/lettuce_webdriver.git@911e3af995f7792cbd1cd84555d988ccb5a3917c#egg=lettuce_webdriver-dev
 mock
 nose
 pep8

@@ -176,7 +176,7 @@ class MockProfileServer(webservice.UserWebService):
 
         response = requests.Response()
         # pylint:disable=protected-access
-        response._content = content
+        response._content = content.encode()
         response.status_code = 400
 
         return response
@@ -296,7 +296,8 @@ class MockProfileServer(webservice.UserWebService):
         Generate a username for a user.
         """
 
-        return 'sha256:' + sha256(user['email'].lower()).hexdigest()[:23]
+        hash_base = user['email'].lower().encode()
+        return 'sha256:' + sha256(hash_base).hexdigest()[:23]
 
     def register(self, user):
         """

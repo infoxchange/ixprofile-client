@@ -1,6 +1,13 @@
 """
 Miscellaneous utilities.
 """
+
+try:
+    reduce
+except NameError:
+    from functools import reduce  # pylint:disable=redefined-builtin
+
+from functools import total_ordering
 from operator import itemgetter, methodcaller
 
 
@@ -20,6 +27,24 @@ def leave_only_keys(*keys):
         }
 
     return filtered
+
+
+@total_ordering
+class Negate(object):
+    """
+    A value that reverses the comparison operators.
+
+    For every two values x and y, if x < y, then Negate(x) > Negate(y) (rules
+    for other comparisons are similar).
+
+    Negate values can only be compared to other Negate values.
+    """
+
+    def __init__(self, value):
+        self.negated = value
+
+    def __lt__(self, another):
+        return another.negated < self.negated
 
 
 def multi_key_sort(items, order_by, functions=None, getter=itemgetter):
@@ -50,19 +75,16 @@ def multi_key_sort(items, order_by, functions=None, getter=itemgetter):
 
         comparers.append((func(field), polarity))
 
-    def comparer(left, right):
+    def multi_key(value):
         """
-        Comparison function to compare two dicts or objects given a set of
-        polarities
+        Build the comparison tuple for a given value.
         """
-        for func, polarity in comparers:
-            result = cmp(func(left), func(right))
-            if result:
-                return polarity * result
+        return tuple(
+            func(value) if polarity > 0 else Negate(func(value))
+            for func, polarity in comparers
+        )
 
-        return 0
-
-    return sorted(items, cmp=comparer)
+    return sorted(items, key=multi_key)
 
 
 def compose(*functions):
