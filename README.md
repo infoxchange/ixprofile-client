@@ -1,5 +1,8 @@
 # IXProfileClient
 
+[![Build Status](https://travis-ci.org/infoxchange/ixprofile-client.svg?branch=master)](https://travis-ci.org/infoxchange/ixprofile-client)
+[![Coverage Status](https://coveralls.io/repos/github/infoxchange/ixprofile-client/badge.svg)](https://coveralls.io/github/infoxchange/ixprofile-client)
+
 Library package for Django applications using the IX Profiles server for
 authentication and user management.
 
