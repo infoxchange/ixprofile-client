@@ -11,6 +11,11 @@ settings.configure(
     CACHES={'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }},
+    INSTALLED_APPS=(
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'social.apps.django_app.default',
+    ),
     PROFILE_SERVER='dummy_server',
     PROFILE_SERVER_KEY='mock_app',
     PROFILE_SERVER_SECRET='dummy_secret',
