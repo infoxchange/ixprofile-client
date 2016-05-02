@@ -7,5 +7,7 @@ install:
     - pip install -r test_requirements.txt
 script:
     - .githooks/pre-commit -f
-    - nosetests
+    - nosetests --with-coverage --cover-package=ixprofile_client
 sudo: false
+after_success:
+    coveralls
