@@ -12,7 +12,7 @@ with open('requirements.txt') as requirements, \
         name='IXProfileClient',
         version='0.2.0',
         author='Infoxchange dev team',
-        author_email='devs@infoxchange.net.au',
+        author_email='devs@infoxchange.org',
         packages=find_packages(),
         license='MIT',
         description='IX Profile Server client',
