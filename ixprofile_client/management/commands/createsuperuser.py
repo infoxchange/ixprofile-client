@@ -1,16 +1,16 @@
 """
 A management command to create a user with a given email.
 """
+# pylint:disable=redefined-builtin,unused-wildcard-import
+from __future__ import absolute_import, unicode_literals
+from future import standard_library
+standard_library.install_aliases()
+from future.builtins import *
+# pylint:enable=redefined-builtin,unused-wildcard-import
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
 # pylint:disable=redefined-builtin
 from builtins import input
 # pylint:enable=redefined-builtin
-from future import standard_library
-standard_library.install_aliases()
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError

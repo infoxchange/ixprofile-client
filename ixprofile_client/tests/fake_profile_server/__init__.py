@@ -4,9 +4,9 @@ Unit tests against the fake profile server
 
 from __future__ import absolute_import
 
-from ...steps import MockProfileServer
-
 from unittest import TestCase
+
+from ...steps import MockProfileServer
 
 
 class FakeProfileServerTestCase(TestCase):

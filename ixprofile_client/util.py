@@ -91,6 +91,7 @@ def compose(*functions):
     """
     Create a single unary function from multiple unary functions
     """
+    # pylint:disable=undefined-variable
     return reduce(lambda f, g: lambda x: f(g(x)), functions)
 
 

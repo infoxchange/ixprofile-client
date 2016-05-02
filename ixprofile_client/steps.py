@@ -11,13 +11,12 @@ For functional tests refer to functional_example.feature which uses a mocked
 profile server.
 
 """
-
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
+# pylint:disable=redefined-builtin,unused-wildcard-import
+from __future__ import absolute_import, unicode_literals
 from future import standard_library
 standard_library.install_aliases()
+from future.builtins import *
+# pylint:enable=redefined-builtin,unused-wildcard-import
 
 import json
 import math
