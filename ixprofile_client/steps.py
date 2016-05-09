@@ -48,12 +48,16 @@ from ixprofile_client.mock import (
 
 def site_url(self, url):
     """
-    Determine the server URL.
+    Return the fully qualified URL for the given URL fragment.
     """
 
-    # TODO: live_server_url is a property, need to call it on the class
-    testclass = self.testclass
-    base_url = testclass.live_server_url.__get__(testclass)
+    try:
+        # In Django < 1.9, `live_server_url` is decorated as a `property`, but
+        # we need to access it on the class.
+        base_url = self.testclass.live_server_url.__get__(self.testclass)
+    except AttributeError:
+        # Dango 1.9 updates `live_server_url` to be a `classproperty`.
+        base_url = self.testclass.live_server_url
 
     return urljoin(base_url, url)
 
