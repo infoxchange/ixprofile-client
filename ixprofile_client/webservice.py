@@ -1,7 +1,7 @@
 """
 Web service to interact with the profile server user records
 """
-# pylint:disable=redefined-builtin,unused-wildcard-import
+# pylint:disable=redefined-builtin,unused-wildcard-import,wrong-import-position
 from __future__ import absolute_import, unicode_literals
 from future import standard_library
 standard_library.install_aliases()
@@ -19,6 +19,7 @@ from django.conf import settings
 from django.utils.http import urlencode
 
 from ixprofile_client import exceptions
+# pylint:enable=wrong-import-position
 
 
 LOG = getLogger(__name__)

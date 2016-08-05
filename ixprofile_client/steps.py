@@ -11,7 +11,7 @@ For functional tests refer to functional_example.feature which uses a mocked
 profile server.
 
 """
-# pylint:disable=redefined-builtin,unused-wildcard-import
+# pylint:disable=redefined-builtin,unused-wildcard-import,wrong-import-position
 from __future__ import absolute_import, unicode_literals
 from future import standard_library
 standard_library.install_aliases()
@@ -44,6 +44,7 @@ from ixprofile_client.mock import (
     MockProfileServer,
     unmock_profile_server,
 )
+# pylint:enable=wrong-import-position
 
 
 def site_url(self, url):

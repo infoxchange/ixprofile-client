@@ -2,6 +2,7 @@
 Django Social Auth backend for authentication using the IX Profile server
 """
 
+# pylint:disable=wrong-import-position
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -15,6 +16,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 from social.backends import open_id
+# pylint:enable=wrong-import-position
 
 
 class IXProfile(open_id.OpenIdAuth):

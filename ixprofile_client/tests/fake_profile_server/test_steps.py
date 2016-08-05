@@ -167,7 +167,7 @@ class TestLettuceSteps(FeatureTest):
             'solaris',
         )
 
-        for email in self.expected_users.keys():
+        for email, _ in self.expected_users.items():
             stored = webservice.profile_server.find_by_email(email)
 
             # For stable comparison

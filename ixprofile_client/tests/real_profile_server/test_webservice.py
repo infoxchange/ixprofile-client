@@ -2,6 +2,7 @@
 Test webservice
 """
 
+# pylint:disable=wrong-import-position
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -17,6 +18,7 @@ from mock import MagicMock
 from nose.tools import assert_equals, assert_in
 
 from . import RealProfileServerTestCase
+# pylint:enable=wrong-import-position
 
 
 class TestWebservice(RealProfileServerTestCase):
