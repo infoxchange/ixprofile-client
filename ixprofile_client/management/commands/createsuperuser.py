@@ -1,7 +1,7 @@
 """
 A management command to create a user with a given email.
 """
-# pylint:disable=redefined-builtin,unused-wildcard-import
+# pylint:disable=redefined-builtin,unused-wildcard-import,wrong-import-position
 from __future__ import absolute_import, unicode_literals
 from future import standard_library
 standard_library.install_aliases()
@@ -19,6 +19,7 @@ from django.db import transaction
 from ixprofile_client.webservice import UserWebService
 
 from optparse import make_option
+# pylint:enable=wrong-import-position
 
 
 class Command(BaseCommand):

@@ -2,7 +2,7 @@
 django-socialauth pipeline part for IX Profile server
 """
 
-# pylint:disable=redefined-builtin,unused-wildcard-import
+# pylint:disable=redefined-builtin,unused-wildcard-import,wrong-import-position
 from __future__ import absolute_import, unicode_literals
 from future import standard_library
 standard_library.install_aliases()
@@ -19,6 +19,7 @@ from django.http import HttpResponseRedirect
 from social.exceptions import AuthFailed
 
 import ixprofile_client.webservice
+# pylint:enable=wrong-import-position
 
 
 # pylint:disable=unused-argument
