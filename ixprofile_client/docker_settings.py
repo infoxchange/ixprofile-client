@@ -28,5 +28,19 @@ if 'PROFILE_SERVER_URL' in os.environ:
     PROFILE_SERVER = str(_profile_server_url.url)
 
 
+# Expose any HTTP proxies, as per https://github.com/infoxchange/pallet
+
+PROXIES = {}
+
+try:
+    PROXIES = {
+        schema: os.environ['HTTP_PROXY']
+        for schema in ('http', 'https')
+    }
+except KeyError:
+    # No proxy configured, nothing to do
+    pass
+
+
 # Make OpenID module trust the proper certificates
 setDefaultFetcher(SettingsAwareFetcher())

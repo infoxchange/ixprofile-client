@@ -71,6 +71,7 @@ class UserWebService(object):
                 settings.PROFILE_SERVER_SECRET
             ),
             verify=settings.SSL_CA_FILE,
+            proxies=settings.PROXIES,
             **kwargs
         )
 
