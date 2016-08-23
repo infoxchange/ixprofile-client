@@ -11,7 +11,7 @@ import os
 from furl import furl
 from openid.fetchers import setDefaultFetcher
 
-from ixprofile_client.fetchers import SettingsAwareFetcher
+from ixprofile_client.fetchers import ProxyFetcher
 
 PROFILE_SERVER = None
 PROFILE_SERVER_KEY = None
@@ -41,6 +41,4 @@ except KeyError:
     # No proxy configured, nothing to do
     pass
 
-
-# Make OpenID module trust the proper certificates
-setDefaultFetcher(SettingsAwareFetcher())
+setDefaultFetcher(ProxyFetcher())
