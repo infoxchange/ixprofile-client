@@ -1,0 +1,5 @@
+[run]
+source = ixprofile_client
+
+[report]
+omit = ixprofile_client/steps.py

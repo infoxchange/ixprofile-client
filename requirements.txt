@@ -1,5 +1,5 @@
-Django >= 1.6
-furl >= 0.3.95
+Django>=1.8,<1.10
+furl>=0.3.95
 future
-python-social-auth >= 0.1.20
-requests >= 2.3.0
+python-social-auth>=0.1.20
+requests>=2.3.0

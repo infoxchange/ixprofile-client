@@ -19,6 +19,7 @@ from future.builtins import *
 # pylint:enable=redefined-builtin,unused-wildcard-import
 
 import json
+from logging import getLogger
 import math
 from time import time
 from urllib.parse import urljoin  # pylint:disable=import-error
@@ -34,6 +35,7 @@ from aloe.tools import guess_types
 
 # pylint:disable=no-name-in-module
 from nose.tools import assert_equals, assert_in, assert_not_in
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.support.ui import WebDriverWait
 from social.exceptions import AuthException
 import social.apps.django_app.views
@@ -45,6 +47,9 @@ from ixprofile_client.mock import (
     unmock_profile_server,
 )
 # pylint:enable=wrong-import-position
+
+
+LOG = getLogger(__name__)
 
 
 def site_url(self, url):
@@ -412,12 +417,20 @@ def age_cookie(_, minutes):
     # PhantomJS still sends a cookie if it is added with expiry date in the
     # past. Explicitly delete it in that case.
     if expiry > unix_now:
-        world.browser.add_cookie({
-            'name': cookie['name'],
-            'value': cookie['value'],
-            'path': '/',
-            'expiry': expiry,
-        })
+        try:
+            world.browser.add_cookie({
+                'name': cookie['name'],
+                'value': cookie['value'],
+                'path': '/',
+                'expiry': expiry,
+                'domain': cookie['domain'],
+            })
+        except WebDriverException as error:
+            # Setting the cookie always returns an error, even when it works
+            # (see https://github.com/ariya/phantomjs/issues/14047). We'll
+            # ignore the error, but log it in case it was caused by something
+            # else.
+            LOG.debug("%s", error)
     else:
         world.browser.delete_cookie(settings.SESSION_COOKIE_NAME)
 
