@@ -418,6 +418,10 @@ def age_cookie(_, minutes):
     # past. Explicitly delete it in that case.
     if expiry > unix_now:
         try:
+            # Delete the current cookie, we dont want to end up with 2 cookies
+            world.browser.delete_cookie(settings.SESSION_COOKIE_NAME)
+
+            # Add the updated cookie
             world.browser.add_cookie({
                 'name': cookie['name'],
                 'value': cookie['value'],
