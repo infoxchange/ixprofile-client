@@ -37,8 +37,8 @@ from aloe.tools import guess_types
 from nose.tools import assert_equals, assert_in, assert_not_in
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.support.ui import WebDriverWait
-from social.exceptions import AuthException
-import social.apps.django_app.views
+from social_core.exceptions import AuthException
+import social_django.views
 
 from ixprofile_client import webservice
 from ixprofile_client.mock import (
@@ -282,7 +282,7 @@ def login_framed_profile_server(_, username, password):
     driver.switch_to_default_content()
 
 
-real_auth = social.apps.django_app.views.auth  # pylint:disable=invalid-name
+real_auth = social_django.views.auth  # pylint:disable=invalid-name
 
 
 class AuthHandler(object):
@@ -347,7 +347,7 @@ class AuthHandler(object):
 
 
 auth_handler = AuthHandler()  # pylint:disable=invalid-name
-social.apps.django_app.views.auth = auth_handler.auth
+social_django.views.auth = auth_handler.auth
 
 
 @step(r'I logged in with email "([^"]*)" (\d+) minutes? ago')

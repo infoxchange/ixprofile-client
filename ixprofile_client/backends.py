@@ -15,7 +15,7 @@ from urllib.parse import urljoin  # pylint:disable=import-error
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-from social.backends import open_id
+from social_core.backends import open_id
 # pylint:enable=wrong-import-position
 
 
