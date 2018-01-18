@@ -14,7 +14,7 @@ settings.configure(
     INSTALLED_APPS=(
         'django.contrib.auth',
         'django.contrib.contenttypes',
-        'social.apps.django_app.default',
+        'social_django',
     ),
     PROFILE_SERVER='dummy_server',
     PROFILE_SERVER_KEY='mock_app',
