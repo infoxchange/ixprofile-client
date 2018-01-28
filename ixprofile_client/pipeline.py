@@ -16,7 +16,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
 
-from social.exceptions import AuthFailed
+from social_core.exceptions import AuthFailed
 
 import ixprofile_client.webservice
 # pylint:enable=wrong-import-position

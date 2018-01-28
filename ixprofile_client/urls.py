@@ -9,6 +9,6 @@ from django.views.generic import TemplateView
 # The name 'urlpatterns' is a part of the API
 # 'cls' is a bogus parameter
 urlpatterns = [
-    url(r'', include('social.apps.django_app.urls', namespace='social')),
+    url(r'', include('social_django.urls', namespace='social')),
     url(r'^ixlogin/unbox/', TemplateView.as_view(template_name='unbox.html')),
 ]
