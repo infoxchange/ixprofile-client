@@ -450,7 +450,7 @@ def check_login_cookie(_, minutes):
 
     expiry_time = cookie['expiry'] - int(time())
 
-    assert_equals(math.ceil(expiry_time / 60), minutes)
+    assert_equals(math.floor(expiry_time / 60), minutes)
 
 
 @before.each_example  # pylint:disable=no-member
