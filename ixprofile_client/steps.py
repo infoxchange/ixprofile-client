@@ -34,7 +34,7 @@ from aloe import before, step, world
 from aloe.tools import guess_types
 
 # pylint:disable=no-name-in-module
-from nose.tools import assert_equals, assert_in, assert_not_in
+from nose.tools import assert_equals, assert_in, assert_not_in, assert_true
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.support.ui import WebDriverWait
 from social_core.exceptions import AuthException
@@ -450,7 +450,22 @@ def check_login_cookie(_, minutes):
 
     expiry_time = cookie['expiry'] - int(time())
 
-    assert_equals(math.floor(expiry_time / 60), minutes)
+    assert_equals(round(expiry_time / 60), minutes)
+
+
+@step(r'my cookie expires in roughly (\d+) minutes?')
+def check_login_cookie_rough(_, minutes):
+    """
+    Check the expiry of my login cookie
+    """
+
+    cookie = world.browser.get_cookie(settings.SESSION_COOKIE_NAME)
+    minutes = int(minutes)
+
+    expiry_time = cookie['expiry'] - int(time())
+    expiry_mins = round(expiry_time / 60)
+
+    assert_true(expiry_mins - 5 <= minutes <= expiry_mins + 5)
 
 
 @before.each_example  # pylint:disable=no-member
