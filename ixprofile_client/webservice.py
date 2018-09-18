@@ -63,6 +63,10 @@ class UserWebService(object):
             kwargs.setdefault('headers', {}).\
                 setdefault('Content-Type', 'application/json')
 
+        USE_SSL_CA_FILE = settings.SSL_CA_FILE
+        if url.contains('.office.infoxchange.net.au'):
+            USE_SSL_CA_FILE = '/etc/ssl/certs/ca-certificates.crt'
+
         return requests.request(
             method,
             url,
@@ -70,7 +74,7 @@ class UserWebService(object):
                 settings.PROFILE_SERVER_KEY,
                 settings.PROFILE_SERVER_SECRET
             ),
-            verify=settings.SSL_CA_FILE,
+            verify=USE_SSL_CA_FILE,
             **kwargs
         )
 

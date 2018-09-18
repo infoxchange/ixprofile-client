@@ -40,4 +40,9 @@ class SettingsAwareFetcher(Urllib2Fetcher):
             if hasattr(settings, 'SSL_CA_FILE'):
                 kwargs['cafile'] = settings.SSL_CA_FILE
 
+                if hasattr(settings, 'PROFILE_SERVER') and \
+                        settings.PROFILE_SERVER.contains(
+                            '.office.infoxchange.net.au'):
+                    kwargs['cafile'] = '/etc/ssl/certs/ca-certificates.crt'
+
         return urlopen(*args, **kwargs)
