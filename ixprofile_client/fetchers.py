@@ -35,5 +35,8 @@ class SettingsAwareFetcher(Urllib2Fetcher):
             from django.conf import settings
             if hasattr(settings, 'SSL_CA_FILE'):
                 kwargs['cafile'] = settings.SSL_CA_FILE
+                if hasattr(settings, 'PROFILE_SERVER') and \
+                        '.office.infoxchange.net.au' in settings.PROFILE_SERVER:
+                    kwargs['cafile'] = '/etc/ssl/certs/ca-certificates.crt'
 
         return urlopen(*args, **kwargs)
