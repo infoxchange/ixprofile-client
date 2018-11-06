@@ -1,4 +1,4 @@
-Django>=1.8,<1.10
+Django>=1.8,<2
 furl>=0.3.95
 future
 social-auth-app-django>=2.1.0
