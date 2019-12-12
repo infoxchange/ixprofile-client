@@ -11,6 +11,7 @@ For functional tests refer to functional_example.feature which uses a mocked
 profile server.
 
 """
+# pylint: disable=comparison-with-callable
 # pylint:disable=redefined-builtin,unused-wildcard-import,wrong-import-position
 from __future__ import absolute_import, unicode_literals
 from future import standard_library
@@ -20,7 +21,6 @@ from future.builtins import *
 
 import json
 from logging import getLogger
-import math
 from time import time
 from urllib.parse import urljoin  # pylint:disable=import-error
 
@@ -285,7 +285,7 @@ def login_framed_profile_server(_, username, password):
 real_auth = social_django.views.auth  # pylint:disable=invalid-name
 
 
-class AuthHandler(object):
+class AuthHandler:
     """
     A singleton for handling a mocked authentication requests
 

@@ -17,8 +17,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from ixprofile_client.webservice import UserWebService
-
-from optparse import make_option
 # pylint:enable=wrong-import-position
 
 
@@ -27,16 +25,17 @@ class Command(BaseCommand):
     The command to create a superuser with a given email.
     """
 
-    option_list = BaseCommand.option_list + (
-        make_option('--email', default=None,
-                    help='Specifies the email for the superuser.'),
-        make_option('--noinput',
-                    action='store_false',
-                    dest='interactive',
-                    default=True,
-                    help='Tells Django to NOT prompt the user for input of '
-                    'any kind. You must use --email with --noinput.'),
-    )
+    def add_arguments(self, parser):
+        """
+        Add the arguments for the command.
+        """
+        parser.add_argument('--email', default=None,
+                            help='Specifies the email for the superuser.')
+        parser.add_argument('--noinput', action='store_false',
+                            dest='interactive',
+                            help='Tells Django to NOT prompt the user for '
+                                 'input of any kind. You must use --email with '
+                                 '--noinput')
 
     def handle(self, *args, **options):
         interactive = options.get('interactive')

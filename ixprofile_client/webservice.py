@@ -25,7 +25,7 @@ from ixprofile_client import exceptions
 LOG = getLogger(__name__)
 
 
-class UserWebService(object):
+class UserWebService:
     """
     Web service to interact with the profile server user records
     """
@@ -126,11 +126,12 @@ class UserWebService(object):
 
         if username is not None:
             return self.find_by_username(username)
-        elif email is not None:
+
+        if email is not None:
             return self.find_by_email(email)
-        else:
-            raise ValueError("Exactly one of 'username' or 'email' must be "
-                             "specified in the arguments.")
+
+        raise ValueError("Exactly one of 'username' or 'email' must be "
+                            "specified in the arguments.")
 
     def find_by_username(self, username):
         """
@@ -155,7 +156,8 @@ class UserWebService(object):
         count = users['meta']['total_count']
         if count == 0:
             return None
-        elif count > 1:
+
+        if count > 1:
             raise exceptions.EmailNotUnique(None, email)
 
         return users['objects'][0]
@@ -250,9 +252,9 @@ class UserWebService(object):
         # Instance of 'LookupDict' has no 'not_found' member
         if response.status_code == requests.codes.not_found:
             return []
-        else:
-            self._raise_for_failure(response)
-            return response.json()['users']
+
+        self._raise_for_failure(response)
+        return response.json()['users']
 
     def add_group(self, user, group):
         """

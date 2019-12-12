@@ -75,11 +75,11 @@ class MockProfileServer(webservice.UserWebService):
                 key: user.get(key, default)
                 for key, (_, default) in details_fields.items()
             }
-        else:
-            return {
-                key: getattr(user, key) if real else default
-                for key, (real, default) in details_fields.items()
-            }
+
+        return {
+            key: getattr(user, key) if real else default
+            for key, (real, default) in details_fields.items()
+        }
 
     def find_by_email(self, email):
         """
@@ -189,7 +189,7 @@ class MockProfileServer(webservice.UserWebService):
         raise ProfileServerFailure(
             self._dummy_response(json.dumps(error_json)))
 
-    def list(self, **kwargs):  # pylint:disable=too-complex
+    def list(self, **kwargs):
         """
         List all the users subscribed to the application.
         """

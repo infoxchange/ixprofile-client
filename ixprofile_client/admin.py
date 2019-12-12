@@ -60,14 +60,14 @@ class UserAdmin(auth_admin.UserAdmin):
         'is_staff',
     )
 
-    def get_readonly_fields(self, request, user=None):
+    def get_readonly_fields(self, request, obj=None):
         """
         Only allow certain fields to be editable on creation.
         """
-        if user and user.pk:
+        if obj and obj.pk:
             return self.edit_readonly_fields + self.readonly_fields
-        else:
-            return self.readonly_fields
+
+        return self.readonly_fields
 
     form = AdminUserChangeForm
     add_form = forms.UserCreationForm

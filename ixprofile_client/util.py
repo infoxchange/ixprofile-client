@@ -30,7 +30,7 @@ def leave_only_keys(*keys):
 
 
 @total_ordering
-class Negate(object):
+class Negate:
     """
     A value that reverses the comparison operators.
 
