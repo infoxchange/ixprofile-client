@@ -1,7 +1,7 @@
 language: python
 python:
-    - "3.4"
     - "3.5"
+    - "3.7"
 env:
     - DJANGO="django>=1.11,<3"
 install:
