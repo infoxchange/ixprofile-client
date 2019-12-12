@@ -26,3 +26,4 @@ class PrintEmailNotUniqueMessage(MiddlewareMixin):
         """
         if isinstance(exception, EmailNotUnique):
             return SimpleTemplateResponse('email_not_unique.html')
+        return None

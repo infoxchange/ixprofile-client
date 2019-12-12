@@ -32,7 +32,9 @@ class SettingsAwareFetcher(Urllib2Fetcher):
         # Old versions of urllib2 cannot verify certificates
         # pylint:disable=deprecated-method
         if PY3 or 'cafile' in inspect.getargspec(urlopen).args:
+            # pylint: disable=import-outside-toplevel
             from django.conf import settings
+            # pylint: enable=import-outside-toplevel
             if hasattr(settings, 'SSL_CA_FILE'):
                 kwargs['cafile'] = settings.SSL_CA_FILE
 

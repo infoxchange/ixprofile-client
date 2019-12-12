@@ -17,8 +17,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from ixprofile_client.webservice import UserWebService
-
-from optparse import make_option
 # pylint:enable=wrong-import-position
 
 

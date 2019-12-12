@@ -8,5 +8,4 @@ mock
 nose
 pep8
 pylint
-pylint_mccabe
 selenium
