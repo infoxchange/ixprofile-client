@@ -285,7 +285,7 @@ def login_framed_profile_server(_, username, password):
 real_auth = social_django.views.auth  # pylint:disable=invalid-name
 
 
-class AuthHandler(object):
+class AuthHandler:
     """
     A singleton for handling a mocked authentication requests
 

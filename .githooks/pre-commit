@@ -47,7 +47,7 @@ def output(command):
     return sub.stdout.read().decode()
 
 
-class Main(object):
+class Main:
     """
     Check the Python code in the project.
     """

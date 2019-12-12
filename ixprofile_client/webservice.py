@@ -25,7 +25,7 @@ from ixprofile_client import exceptions
 LOG = getLogger(__name__)
 
 
-class UserWebService(object):
+class UserWebService:
     """
     Web service to interact with the profile server user records
     """

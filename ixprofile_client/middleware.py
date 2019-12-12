@@ -4,11 +4,12 @@ Middleware specific to ixprofile_client
 from __future__ import absolute_import, unicode_literals
 
 from django.template.response import SimpleTemplateResponse
+from django.utils.deprecation import MiddlewareMixin
 
 from .exceptions import EmailNotUnique
 
 
-class PrintEmailNotUniqueMessage(object):
+class PrintEmailNotUniqueMessage(MiddlewareMixin):
     """
     Middleware class which prints a message if
     EmailNotUnique is raised and
