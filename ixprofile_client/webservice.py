@@ -266,9 +266,14 @@ class UserWebService:
         """
         Add a user to the list of named groups
         """
+        user = self.find_by_email(user.email)
+
+        if not user:
+            raise exceptions.ProfileServerFailure("User could not be found.")
+
         data = {
             'groups': list(
-                set(self.find_by_username(user.username)['groups'] + groups)
+                set(user['groups'] + groups)
             ),
         }
 
