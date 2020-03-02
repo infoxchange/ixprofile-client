@@ -278,7 +278,7 @@ class UserWebService:
         }
 
         response = self._request('PATCH',
-                                 self._detail_uri(user.username),
+                                 self._detail_uri(user['username']),
                                  data=json.dumps(data))
         self._raise_for_failure(response)
 
