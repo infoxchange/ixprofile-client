@@ -26,8 +26,11 @@ class ProfileServerException(Exception):
         """
         Unicode representation of the exception
         """
-        return "Profile server failure: %d %s." % (
-            self.response.status_code, self.response.reason)
+        try:
+            return "Profile server failure: %d %s." % (
+                self.response.status_code, self.response.reason)
+        except (AttributeError, KeyError):
+            return "Profile server failure: %s." % self.response
 
 
 class EmailNotUnique(ProfileServerException):
