@@ -28,6 +28,7 @@ from django.conf import settings
 from django.contrib.auth import get_backends, login
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 from django.utils.timezone import now
 
 from aloe import before, step, world
@@ -334,7 +335,7 @@ class AuthHandler:
 
         login(request, self.user)
 
-        return HttpResponseRedirect(request.GET['next'])
+        return HttpResponseRedirect(request.GET.get('next', '/'))
 
     def real_auth(self, *args, **kwargs):
         """
@@ -376,8 +377,19 @@ def create_login_cookie(self, email, minutes):
     webservice.profile_server.set_details(
         user, last_login=user.last_login)
 
-    self.given('I visit site page ""')
+    self.given('I visit view named "social:begin" with args "ixprofile"')
     self.given('I left my computer for {0} minutes'.format(minutes))
+
+
+@step(r'I visit view named "([^"]+)" with args "([^"]+)"')
+def visit_named_view_with_args(self, view_name, view_args):
+    view_args = view_args.split(', ')
+    self.given('I visit site page "%s"' % reverse(view_name, args=view_args))
+
+
+@step(r'I visit view named "([^"]+)"')
+def visit_named_view(self, view_name):
+    self.given('I visit site page "%s"' % reverse(view_name))
 
 
 @step(r'I log in with email "([^"]*)" and visit site page "([^"]*)"')
