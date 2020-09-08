@@ -387,7 +387,7 @@ def visit_named_view_with_args(self, view_name, view_args):
     self.given('I visit site page "%s"' % reverse(view_name, args=view_args))
 
 
-@step(r'I visit view named "([^"]+)"')
+@step(r'I visit view named "([^"]+)"$')
 def visit_named_view(self, view_name):
     self.given('I visit site page "%s"' % reverse(view_name))
 
