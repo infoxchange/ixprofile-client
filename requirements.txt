@@ -1,5 +1,5 @@
 Django>=1.11.28,<3
 furl>=0.3.95
 future
-social-auth-app-django>=2.1.0
+social-auth-app-django>=4.0.0
 requests>=2.3.0
